@@ -39,7 +39,7 @@ public class RegisterSellerActivity extends AppCompatActivity implements Locatio
     private ImageView profileIv;
     private EditText nameEt, phoneEt, countryEt, stateEt, cityEt, addressEt, emailEt, passwordEt, cPasswordEt;
     private Button registerBtn;
-    private TextView registerSellerTv;
+
 
     //permission constants
     public static final int LOCATION_REQUEST_CODE = 100;
@@ -80,7 +80,7 @@ public class RegisterSellerActivity extends AppCompatActivity implements Locatio
         cPasswordEt = findViewById(R.id.cPasswordEt);
 
         registerBtn = findViewById(R.id.registerBtn);
-        registerSellerTv = findViewById(R.id.registerSellerTv);
+
 
         //init permission array
         locationPermission = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
