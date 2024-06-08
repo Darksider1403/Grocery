@@ -1,7 +1,6 @@
 package com.example.grocery;
 
-import static com.example.grocery.RegisterSellerActivity.IMAGE_PICK_CAMERA_CODE;
-import static com.example.grocery.RegisterSellerActivity.IMAGE_PICK_GALLERY_CODE;
+import static com.example.grocery.RegisterSellerActivity.LOCATION_REQUEST_CODE;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -9,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -16,6 +16,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.Button;
@@ -24,6 +25,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.Manifest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,8 +41,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
 
     private ImageButton backBtn, gpsBtn;
     private ImageView profileIv;
-    private EditText nameEt, phoneEt, countryEt, stateEt, cityEt, addressEt,
-            emailEt, passwordEt, cPasswordEt;
+    private EditText nameEt, phoneEt, countryEt, stateEt, cityEt, addressEt, emailEt, passwordEt, cPasswordEt;
     private Button registerBtn;
     private TextView registerSellerTv;
 
@@ -83,6 +84,8 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         passwordEt = findViewById(R.id.passwordEt);
         cPasswordEt = findViewById(R.id.cPasswordEt);
 
+        registerBtn = findViewById(R.id.registerBtn);
+        registerSellerTv = findViewById(R.id.registerSellerTv);
         //init permission array
         locationPermission = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
         cameraPermission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -91,7 +94,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onBackPressed();
+                finish();
             }
         });
         gpsBtn.setOnClickListener((new View.OnClickListener() {
@@ -100,7 +103,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
                 //detect current location
                 if (checkLocationPermission()) {
                     //already allowed
-                    detecLocation();
+                    detectLocation();
                 } else {
                     //not allowed, request
                     requestLocationPermission();
@@ -117,7 +120,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //register user
+                Log.d("RegisterUserActivity", "onClick: ");
             }
         });
         registerSellerTv.setOnClickListener(new View.OnClickListener() {
@@ -137,25 +140,23 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         builder.setTitle("Pick Image")
                 .setItems(options, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog,int which){
+                    public void onClick(DialogInterface dialog, int which) {
                         //handle clicks
                         if (which == 0) {
                             //camera clicked
-                            if (checkCameraPermission()){
+                            if (checkCameraPermission()) {
                                 //camera permissions allowed
                                 pickFromCamera();
-                            }
-                            else {
+                            } else {
                                 //not allowed, request
                                 requestCameraPermission();
                             }
                         } else {
                             //gallery clicked
-                            if (checkStorePermission()){
+                            if (checkStorePermission()) {
                                 //storage permissions allowed
                                 pickFromGallery();
-                            }
-                            else {
+                            } else {
                                 //not allowed, request
                                 requestStoragePermission();
                             }
@@ -187,17 +188,28 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         Toast.makeText(this, "Please wait...", Toast.LENGTH_LONG).show();
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     }
 
     private void findAddress() {
         //find address, country, state, city
         Geocoder geocoder;
-        List<Adapter> address;
+        List<Address> addresses;
         geocoder = new Geocoder(this, Locale.getDefault());
 
         try {
             addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            assert addresses != null;
             String address = addresses.get(0).getAddressLine(0);//complete Address
             String city = addresses.get(0).getLocality();
             String state = addresses.get(0).getAdminArea();
@@ -214,8 +226,8 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     }
 
     private boolean checkLocationPermission() {
-        boolean result = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                (PackageManager.PERMISSION_GRANTED);
+        boolean result = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == (PackageManager.PERMISSION_GRANTED);
         return result;
     }
 
@@ -225,8 +237,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
 
     private boolean checkStorePermission() {
         boolean result = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                (PackageManager.PERMISSION_GRANTED);
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
 
         return result;
     }
@@ -237,12 +248,10 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
 
     private boolean checkCameraPermission() {
         boolean result = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA) ==
-                (PackageManager.PERMISSION_GRANTED);
+                Manifest.permission.CAMERA) == (PackageManager.PERMISSION_GRANTED);
 
         boolean result1 = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                (PackageManager.PERMISSION_GRANTED);
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == (PackageManager.PERMISSION_GRANTED);
 
         return result && result1;
     }
@@ -259,7 +268,6 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         findAddress();
     }
 
-
     @Override
     public void onStatusChanged(String provider, int status, Bundle extra) {
 
@@ -274,15 +282,15 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     public void onProviderDisabled(String provider) {
         //gps location disabled
         Toast.makeText(this, "Please turn on location", Toast.LENGTH_SHORT).show();
-
     }
 
+
     @Override
-    public void onRequestPermissionResult(int requestCode, @NonNull String[] permissions, NonNull int[]grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case LOCATION_REQUEST_CODE: {
                 if ((grantResults.length > 0)) {
-                    boolean locationAccepted = grantResults[0] = PackageManager.PERMISSION_GRANTED;
+                    boolean locationAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
                     if (locationAccepted) {
                         //permission allowed
                         detectLocation();
@@ -295,21 +303,23 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
             break;
             case CAMERA_REQUEST_CODE: {
                 if ((grantResults.length > 0)) {
-                    boolean cameraAccepted = grantResults[0] = PackageManager.PERMISSION_GRANTED;
-                    boolean storageAccepted = grantResults[1] = PackageManager.PERMISSION_GRANTED;
+                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean storageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
                     if (cameraAccepted && storageAccepted) {
                         //permission allowed
                         pickFromCamera();
                     } else {
                         //permission denied
-                        Toast.makeText(this, "Camera permission is neccessary!!!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this,
+                                "Camera permission is neccessary!!!",
+                                Toast.LENGTH_SHORT).show();
                     }
                 }
             }
             break;
             case STORAGE_REQUEST_CODE: {
                 if ((grantResults.length > 0)) {
-                    boolean storageAccepted = grantResults[0] = PackageManager.PERMISSION_GRANTED;
+                    boolean storageAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
                     if (storageAccepted) {
                         //permission allowed
                         pickFromCamera();
@@ -325,15 +335,14 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
-        if (resultCode==RESULT_OK){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
             if (resultCode == IMAGE_PICK_GALLERY_CODE) {
                 //get picked image
                 image_uri = data.getData();
                 //set to imageview
                 profileIv.setImageURI(image_uri);
-            }
-            else if (resultCode == IMAGE_PICK_CAMERA_CODE) {
+            } else if (resultCode == IMAGE_PICK_CAMERA_CODE) {
                 //set to imageview
                 profileIv.setImageURI(image_uri);
             }

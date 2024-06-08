@@ -68,7 +68,7 @@
                 android:src="@drawable/person_grey"
                 app:c_border="true"
                 app:c_border_color="@color/colorPrimary"
-                app:c_border_width="1dp"
+                app:c_border_width="1dp"/>
 
             <EditText
                 android:id="@+id/nameEt"

@@ -3,6 +3,7 @@ package com.example.grocery;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,17 +31,33 @@ public class LoginActivity extends AppCompatActivity {
         noAccountTv = findViewById(R.id.noAccountTv);
         loginBtn = findViewById(R.id.loginBtn);
 
-        noAccountTv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, RegisterUserActivity.class));
-            }
-        });
+        Log.d("LoginActivity", "forgotTv ID: " + R.id.forgotTv);
+        Log.d("LoginActivity", "noAccountTv ID: " + R.id.noAccountTv);
+
+
+        if (forgotTv == null || noAccountTv == null) {
+            throw new RuntimeException("Ensure forgotTv and noAccountTv are properly initialized. Check your layout file.");
+        }
 
         forgotTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("LoginActivity", "Forgot Password clicked");
                 startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
+                if (forgotTv == null) {
+                    Log.e("LoginActivity", "forgotTv is null");
+                }
+            }
+        });
+
+        noAccountTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("LoginActivity", "Register clicked");
+                startActivity(new Intent(LoginActivity.this, RegisterUserActivity.class));
+                if (noAccountTv == null) {
+                    Log.e("LoginActivity", "noAccountTv is null");
+                }
             }
         });
     }
