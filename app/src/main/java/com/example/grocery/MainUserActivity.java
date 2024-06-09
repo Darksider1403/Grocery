@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -17,10 +20,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Objects;
+
 public class MainUserActivity extends AppCompatActivity {
     private TextView nameTv;
     private ImageButton logoutBtn;
-
     private FirebaseAuth firebaseAuth;
 
     @Override
@@ -34,9 +39,33 @@ public class MainUserActivity extends AppCompatActivity {
         checkUser();
 
         logoutBtn.setOnClickListener(v -> {
-            firebaseAuth.signOut();
-            checkUser();
+            // make offline
+            // sign out
+            // go to login screen
+            makeMeOffline();
         });
+    }
+
+    private void makeMeOffline() {
+        // after logging in, make user online
+        showProgressDialog("Logging Out...");
+
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("online", "true");
+
+        // update value to db
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid()))
+                .updateChildren(hashMap).addOnSuccessListener(unused -> {
+                    // updated successfully
+                    firebaseAuth.signOut();
+                    checkUser();
+                })
+                .addOnFailureListener(e -> {
+                    hideProgressDialog();
+                    Toast.makeText(MainUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void checkUser() {
@@ -69,5 +98,17 @@ public class MainUserActivity extends AppCompatActivity {
                     public void onCancelled(@NonNull DatabaseError error) {
                     }
                 });
+    }
+
+    private void showProgressDialog(String message) {
+        ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
+    }
+
+    private void hideProgressDialog() {
+        Fragment prev = getSupportFragmentManager().findFragmentByTag("progress");
+        if (prev != null) {
+            DialogFragment df = (DialogFragment) prev;
+            df.dismiss();
+        }
     }
 }
