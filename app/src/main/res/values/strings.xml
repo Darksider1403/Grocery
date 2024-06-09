@@ -18,4 +18,14 @@
     <string name="full_name">Full Name</string>
     <string name="phone">Phone</string>
     <string name="register">Register</string>
+    <string name="register_seller">Register Seller</string>
+    <string name="todo">TODO</string>
+    <string name="shop_name">Shop Name</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="delivery_fee">Delivery Fee</string>
+    <string name="country">Country</string>
+    <string name="state">State</string>
+    <string name="city">City</string>
+    <string name="complete_address">Complete Address</string>
+    <string name="name">Name</string>
 </resources>

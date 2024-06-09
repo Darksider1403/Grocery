@@ -28,6 +28,8 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".RegisterSellerActivity" />
         <activity android:name=".ForgotPasswordActivity" />
+        <activity android:name=".MainSellerActivity" />
+        <activity android:name=".MainUserActivity" />
         <activity
             android:name=".SplashActivity"
             android:exported="true">

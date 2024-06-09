@@ -55,8 +55,12 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
 
-    implementation ("com.github.AtifSayings:CircularImageView:1.0.2")
-    implementation ("com.theartofdev.edmodo:android-image-cropper:2.8.+")
+    implementation (libs.circularimageview)
+    implementation (libs.android.image.cropper)
+
+    // image loading from firebase
+    implementation (libs.picasso)
+
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 

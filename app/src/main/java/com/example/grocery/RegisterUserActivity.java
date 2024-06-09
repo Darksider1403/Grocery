@@ -3,6 +3,7 @@ package com.example.grocery;
 import static com.example.grocery.RegisterSellerActivity.LOCATION_REQUEST_CODE;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,7 +17,9 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.Button;
@@ -27,14 +30,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 
 public class RegisterUserActivity extends AppCompatActivity implements LocationListener {
@@ -61,9 +76,12 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
 
     //image picked uri
     private Uri image_uri;
-    private double latitude, longitude;
-
+    private double latitude = 0.0, longitude = 0.0;
     private LocationManager locationManager;
+    private ActivityResultLauncher<String> galleryLauncher;
+    private ActivityResultLauncher<Uri> cameraLauncher;
+    private FirebaseAuth firebaseAuth;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,53 +101,223 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         emailEt = findViewById(R.id.emailEt);
         passwordEt = findViewById(R.id.passwordEt);
         cPasswordEt = findViewById(R.id.cPasswordEt);
-
         registerBtn = findViewById(R.id.registerBtn);
         registerSellerTv = findViewById(R.id.registerSellerTv);
+
         //init permission array
         locationPermission = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
         cameraPermission = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        gpsBtn.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //detect current location
-                if (checkLocationPermission()) {
-                    //already allowed
-                    detectLocation();
-                } else {
-                    //not allowed, request
-                    requestLocationPermission();
-                }
+        firebaseAuth = FirebaseAuth.getInstance();
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle("Please wait...");
+        progressDialog.setCanceledOnTouchOutside(false);
+
+        backBtn.setOnClickListener((v -> finish()));
+        gpsBtn.setOnClickListener((v -> {
+            //detect current location
+            if (checkLocationPermission()) {
+                //already allowed
+                detectLocation();
+            } else {
+                //not allowed, request
+                requestLocationPermission();
             }
         }));
-        profileIv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //pick Image
-                showImagePickDialog();
-            }
+        profileIv.setOnClickListener(v -> {
+            //pick Image
+            showImagePickDialog();
         });
-        registerBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("RegisterUserActivity", "onClick: ");
-            }
+        registerBtn.setOnClickListener(v -> {
+            // register user
+            inputData();
         });
-        registerSellerTv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //open register seller activity
-                startActivity(new Intent(RegisterUserActivity.this, RegisterSellerActivity.class));
-            }
+        registerSellerTv.setOnClickListener(v -> {
+            //open register seller activity
+            startActivity(new Intent(RegisterUserActivity.this, RegisterSellerActivity.class));
         });
+    }
+
+    private String fullName, phoneNumber, country, state, city, address, email, password, confirmPassword;
+
+    private void inputData() {
+        // input data
+        fullName = nameEt.getText().toString().trim();
+        phoneNumber = phoneEt.getText().toString().trim();
+        country = countryEt.getText().toString().trim();
+        state = stateEt.getText().toString().trim();
+        city = cityEt.getText().toString().trim();
+        address = addressEt.getText().toString().trim();
+        email = emailEt.getText().toString().trim();
+        password = passwordEt.getText().toString().trim();
+        confirmPassword = cPasswordEt.getText().toString().trim();
+
+        // validate data
+        if (TextUtils.isEmpty(fullName)) {
+            Toast.makeText(this, "Enter Name...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (TextUtils.isEmpty(phoneNumber)) {
+            Toast.makeText(this, "Enter Phone Number...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (latitude == 0.0 || longitude == 0.0) {
+            Toast.makeText(this, "Please click GPS button to detect location...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Invalid email pattern...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (password.length() < 6) {
+            Toast.makeText(this, "Password must be at least 6 characters long...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+            Toast.makeText(this, "Password doesn't match...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        createAccount();
+    }
+
+    private void createAccount() {
+        progressDialog.setMessage("Creating Account");
+        progressDialog.show();
+
+        // create account
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener(authResult -> {
+                    // account created
+                    saveFirebaseData();
+                })
+                .addOnFailureListener(e -> {
+                    // failed creating account
+                    progressDialog.dismiss();
+                    Toast.makeText(RegisterUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void saveFirebaseData() {
+        showProgressDialog("Saving Account Info...");
+
+        String timeStamp = String.valueOf(System.currentTimeMillis());
+
+        if (image_uri == null) {
+            HashMap<String, Object> hashMap = getStringObjectHashMapWithoutImage(timeStamp);
+
+            DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+            ref.child(Objects.requireNonNull(firebaseAuth.getUid())).setValue(hashMap)
+                    .addOnSuccessListener(unused -> {
+                        Log.d("RegisterUserActivity", "Data saved without image successfully.");
+                        hideProgressDialog();
+                        startActivity(new Intent(RegisterUserActivity.this, MainUserActivity.class));
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("RegisterUserActivity", "Error saving data without image: " + e.getMessage());
+                        hideProgressDialog();
+                        Toast.makeText(RegisterUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            String filePathAndName = "profile_images/" + firebaseAuth.getUid();
+            StorageReference storageReference = FirebaseStorage.getInstance().getReference(filePathAndName);
+            storageReference.putFile(image_uri)
+                    .addOnSuccessListener(taskSnapshot -> {
+                        Log.d("RegisterUserActivity", "Image uploaded successfully.");
+                        Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+                        uriTask.addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Uri downloadImageUri = task.getResult();
+                                Log.d("RegisterUserActivity", "Image URL: " + downloadImageUri);
+
+                                HashMap<String, Object> hashMap = getStringObjectHashMapWithImage(timeStamp, "" + downloadImageUri);
+
+                                DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+                                ref.child(Objects.requireNonNull(firebaseAuth.getUid())).setValue(hashMap)
+                                        .addOnSuccessListener(unused -> {
+                                            Log.d("RegisterUserActivity", "Data saved with image successfully.");
+                                            hideProgressDialog();
+                                            startActivity(new Intent(RegisterUserActivity.this, MainUserActivity.class));
+                                            finish();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e("RegisterUserActivity", "Error saving data with image: " + e.getMessage());
+                                            hideProgressDialog();
+                                            Toast.makeText(RegisterUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        });
+                            } else {
+                                Log.e("RegisterUserActivity", "Error getting download URL: " + task.getException().getMessage());
+                                hideProgressDialog();
+                                Toast.makeText(RegisterUserActivity.this, "Failed to get image URL", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("RegisterUserActivity", "Error uploading image: " + e.getMessage());
+                        hideProgressDialog();
+                        Toast.makeText(RegisterUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+    @NonNull
+    private HashMap<String, Object> getStringObjectHashMapWithImage(String timeStamp, String downloadImageUri) {
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("uid", firebaseAuth.getUid());
+        hashMap.put("email", email);
+        hashMap.put("name", fullName);
+        hashMap.put("phone", phoneNumber);
+        hashMap.put("country", country);
+        hashMap.put("state", state);
+        hashMap.put("city", city);
+        hashMap.put("address", address);
+        hashMap.put("latitude", "" + latitude);
+        hashMap.put("longitude", "" + longitude);
+        hashMap.put("timestamp", timeStamp);
+        hashMap.put("accountType", "User");
+        hashMap.put("online", "true"); // TODO:quan may change to false
+        hashMap.put("profileImage", downloadImageUri); // url of uploaded image
+        return hashMap;
+    }
+
+    @NonNull
+    private HashMap<String, Object> getStringObjectHashMapWithoutImage(String timeStamp) {
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("uid", firebaseAuth.getUid());
+        hashMap.put("email", email);
+        hashMap.put("name", fullName);
+        hashMap.put("phone", phoneNumber);
+        hashMap.put("country", country);
+        hashMap.put("state", state);
+        hashMap.put("city", city);
+        hashMap.put("address", address);
+        hashMap.put("latitude", "" + latitude);
+        hashMap.put("longitude", "" + longitude);
+        hashMap.put("timestamp", timeStamp);
+        hashMap.put("accountType", "Seller");
+        hashMap.put("online", "true");  // TODO:quan may change to false
+        hashMap.put("profileImage", "");
+        return hashMap;
+    }
+
+    private void showProgressDialog(String message) {
+        ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
+    }
+
+    private void hideProgressDialog() {
+        Fragment prev = getSupportFragmentManager().findFragmentByTag("progress");
+        if (prev != null) {
+            DialogFragment df = (DialogFragment) prev;
+            df.dismiss();
+        }
     }
 
     private void showImagePickDialog() {
@@ -138,28 +326,25 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
         //dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Pick Image")
-                .setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //handle clicks
-                        if (which == 0) {
-                            //camera clicked
-                            if (checkCameraPermission()) {
-                                //camera permissions allowed
-                                pickFromCamera();
-                            } else {
-                                //not allowed, request
-                                requestCameraPermission();
-                            }
+                .setItems(options, (dialog, which) -> {
+                    //handle clicks
+                    if (which == 0) {
+                        //camera clicked
+                        if (checkCameraPermission()) {
+                            //camera permissions allowed
+                            pickFromCamera();
                         } else {
-                            //gallery clicked
-                            if (checkStorePermission()) {
-                                //storage permissions allowed
-                                pickFromGallery();
-                            } else {
-                                //not allowed, request
-                                requestStoragePermission();
-                            }
+                            //not allowed, request
+                            requestCameraPermission();
+                        }
+                    } else {
+                        //gallery clicked
+                        if (checkStorePermission()) {
+                            //storage permissions allowed
+                            pickFromGallery();
+                        } else {
+                            //not allowed, request
+                            requestStoragePermission();
                         }
                     }
                 })
@@ -167,9 +352,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     }
 
     private void pickFromGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, IMAGE_PICK_GALLERY_CODE);
+        galleryLauncher.launch("image/*");
     }
 
     private void pickFromCamera() {
@@ -179,9 +362,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
 
         image_uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
 
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri);
-        startActivityForResult(intent, IMAGE_PICK_CAMERA_CODE);
+        cameraLauncher.launch(image_uri);
     }
 
     private void detectLocation() {
