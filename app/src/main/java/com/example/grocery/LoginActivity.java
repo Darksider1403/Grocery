@@ -15,6 +15,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -88,8 +90,7 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Enter password...", Toast.LENGTH_SHORT).show();
         }
 
-        progressDialog.setMessage("Logging in...");
-        progressDialog.show();
+        showProgressDialog("Logging In...");
 
         firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
@@ -98,14 +99,14 @@ public class LoginActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     // failed logging
-                    progressDialog.dismiss();
+                    hideProgressDialog();
                     Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void makeMeOnline() {
         // after logging in, make user online
-        progressDialog.setMessage("Checking User...");
+        showProgressDialog("Checking User...");
 
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("online", "true");
@@ -121,7 +122,18 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     // failed to update
                 });
+    }
 
+    private void showProgressDialog(String message) {
+        ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
+    }
+
+    private void hideProgressDialog() {
+        Fragment prev = getSupportFragmentManager().findFragmentByTag("progress");
+        if (prev != null) {
+            DialogFragment df = (DialogFragment) prev;
+            df.dismiss();
+        }
     }
 
     private void checkUserType() {

@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -51,9 +53,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             Toast.makeText(this, "Invalid Email...", Toast.LENGTH_SHORT).show();
             return;
         }
+        showProgressDialog("Sending instructions to reset password...");
 
-        progressDialog.setMessage("Sending instructions to reset password...");
-        progressDialog.show();
         firebaseAuth.sendPasswordResetEmail(email)
                 .addOnSuccessListener(authResult -> {
                     // instructions send
@@ -63,9 +64,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     // failed sending instructions
-                    progressDialog.dismiss();
+                    hideProgressDialog();
                     Toast.makeText(ForgotPasswordActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
 
+    private void showProgressDialog(String message) {
+        ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
+    }
+
+    private void hideProgressDialog() {
+        Fragment prev = getSupportFragmentManager().findFragmentByTag("progress");
+        if (prev != null) {
+            DialogFragment df = (DialogFragment) prev;
+            df.dismiss();
+        }
     }
 }

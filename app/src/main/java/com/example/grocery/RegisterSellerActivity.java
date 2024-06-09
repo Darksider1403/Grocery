@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,6 +30,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -209,63 +212,63 @@ public class RegisterSellerActivity extends AppCompatActivity implements Locatio
     }
 
     private void saveFirebaseData() {
-        progressDialog.setMessage("Saving Account Info...");
+        showProgressDialog("Saving Account Info...");
 
         String timeStamp = String.valueOf(System.currentTimeMillis());
 
         if (image_uri == null) {
-            // save info without image
-
-            // setup data to save
             HashMap<String, Object> hashMap = getStringObjectHashMapWithoutImage(timeStamp);
 
-            // save to db
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
+            DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
             ref.child(Objects.requireNonNull(firebaseAuth.getUid())).setValue(hashMap)
                     .addOnSuccessListener(unused -> {
-                        progressDialog.dismiss();
-                        startActivity(new Intent(RegisterSellerActivity.this, MainSellerActivity.class));
+                        Log.d("RegisterUserActivity", "Data saved without image successfully.");
+                        hideProgressDialog();
+                        startActivity(new Intent(RegisterSellerActivity.this, MainUserActivity.class));
                         finish();
                     })
                     .addOnFailureListener(e -> {
-                        progressDialog.dismiss();
-                        startActivity(new Intent(RegisterSellerActivity.this, MainSellerActivity.class));
-                        finish();
+                        Log.e("RegisterUserActivity", "Error saving data without image: " + e.getMessage());
+                        hideProgressDialog();
+                        Toast.makeText(RegisterSellerActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
-
         } else {
-            // save info with image
             String filePathAndName = "profile_images/" + firebaseAuth.getUid();
-
-            // upload image
             StorageReference storageReference = FirebaseStorage.getInstance().getReference(filePathAndName);
             storageReference.putFile(image_uri)
                     .addOnSuccessListener(taskSnapshot -> {
-                        // get url of uploaded image
+                        Log.d("RegisterUserActivity", "Image uploaded successfully.");
                         Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                        while (!uriTask.isSuccessful()) ;
-                        Uri downloadImageUri = uriTask.getResult();
+                        uriTask.addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Uri downloadImageUri = task.getResult();
+                                Log.d("RegisterUserActivity", "Image URL: " + downloadImageUri);
 
-                        if (uriTask.isSuccessful()) {
-                            HashMap<String, Object> hashMap = getStringObjectHashMapWithImage(timeStamp, "" + downloadImageUri);
+                                HashMap<String, Object> hashMap = getStringObjectHashMapWithImage(timeStamp, "" + downloadImageUri);
 
-                            // save to db
-                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-                            ref.child(Objects.requireNonNull(firebaseAuth.getUid())).setValue(hashMap)
-                                    .addOnSuccessListener(unused -> {
-                                        progressDialog.dismiss();
-                                        startActivity(new Intent(RegisterSellerActivity.this, MainSellerActivity.class));
-                                        finish();
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        progressDialog.dismiss();
-                                        startActivity(new Intent(RegisterSellerActivity.this, MainSellerActivity.class));
-                                        finish();
-                                    });
-                        }
-
+                                DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+                                ref.child(Objects.requireNonNull(firebaseAuth.getUid())).setValue(hashMap)
+                                        .addOnSuccessListener(unused -> {
+                                            Log.d("RegisterUserActivity", "Data saved with image successfully.");
+                                            hideProgressDialog();
+                                            startActivity(new Intent(RegisterSellerActivity.this, MainUserActivity.class));
+                                            finish();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e("RegisterUserActivity", "Error saving data with image: " + e.getMessage());
+                                            hideProgressDialog();
+                                            Toast.makeText(RegisterSellerActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        });
+                            } else {
+                                Log.e("RegisterUserActivity", "Error getting download URL: " + task.getException().getMessage());
+                                hideProgressDialog();
+                                Toast.makeText(RegisterSellerActivity.this, "Failed to get image URL", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     })
                     .addOnFailureListener(e -> {
+                        Log.e("RegisterUserActivity", "Error uploading image: " + e.getMessage());
+                        hideProgressDialog();
                         Toast.makeText(RegisterSellerActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         }
@@ -315,6 +318,18 @@ public class RegisterSellerActivity extends AppCompatActivity implements Locatio
         hashMap.put("shopOpen", "true");
         hashMap.put("profileImage", "");
         return hashMap;
+    }
+
+    private void showProgressDialog(String message) {
+        ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
+    }
+
+    private void hideProgressDialog() {
+        Fragment prev = getSupportFragmentManager().findFragmentByTag("progress");
+        if (prev != null) {
+            DialogFragment df = (DialogFragment) prev;
+            df.dismiss();
+        }
     }
 
     private void showImagePickDialog() {
