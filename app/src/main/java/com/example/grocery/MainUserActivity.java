@@ -3,6 +3,7 @@ package com.example.grocery;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,7 +26,7 @@ import java.util.Objects;
 
 public class MainUserActivity extends AppCompatActivity {
     private TextView nameTv;
-    private ImageButton logoutBtn;
+    private ImageButton logoutBtn, editProfileBtn;
     private FirebaseAuth firebaseAuth;
 
     @Override
@@ -35,14 +36,26 @@ public class MainUserActivity extends AppCompatActivity {
 
         nameTv = findViewById(R.id.nameTv);
         logoutBtn = findViewById(R.id.logoutBtn);
+        editProfileBtn = findViewById(R.id.editProfileBtn);
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
 
-        logoutBtn.setOnClickListener(v -> {
-            // make offline
-            // sign out
-            // go to login screen
-            makeMeOffline();
+        logoutBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // make offline
+                // sign out
+                // go to login screen
+                makeMeOffline();
+            }
+        });
+
+        editProfileBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //open edit profile activity
+                startActivity(new Intent(MainUserActivity.this, ProfileEditUserActivity.class));
+            }
         });
     }
 
@@ -90,7 +103,7 @@ public class MainUserActivity extends AppCompatActivity {
                             String name = "" + ds.child("name").getValue();
                             String accountType = "" + ds.child("accountType").getValue();
 
-                            nameTv.setText(name + "(" + accountType + ")");
+                            nameTv.setText(name);
                         }
                     }
 

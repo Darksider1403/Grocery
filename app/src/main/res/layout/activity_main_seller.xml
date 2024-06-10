@@ -31,6 +31,14 @@
             android:layout_alignParentEnd="true"
             android:src="@drawable/ic_logout_white" />
 
+        <ImageButton
+            android:id="@+id/editProfileBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@null"
+            android:layout_toStartOf="@id/logoutBtn"
+            android:src="@drawable/edit_gray" />
+
     </RelativeLayout>
 
 </RelativeLayout>
