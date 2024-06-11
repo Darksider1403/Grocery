@@ -138,7 +138,7 @@
         android:drawableStart="@drawable/person_grey"
         android:drawablePadding="5dp"
         android:hint="Address"
-        android:inputType="textPostalAddress"
+        android:inputType="textPostalAddress|textMultiLine"
         android:padding="10dp"/>
 
     <Button

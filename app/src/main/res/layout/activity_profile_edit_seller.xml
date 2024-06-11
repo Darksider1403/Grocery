@@ -164,7 +164,7 @@
         android:drawableStart="@drawable/add_location_grey"
         android:drawablePadding="5dp"
         android:hint="Address"
-        android:inputType="textPostalAddress"
+        android:inputType="textPostalAddress|textMultiLine"
         android:padding="10dp"/>
 
     <androidx.appcompat.widget.SwitchCompat
