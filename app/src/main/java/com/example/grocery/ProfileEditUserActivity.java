@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -13,11 +12,9 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -30,6 +27,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,6 +45,7 @@ import com.squareup.picasso.Picasso;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class ProfileEditUserActivity extends AppCompatActivity implements LocationListener {
 
@@ -108,78 +108,62 @@ public class ProfileEditUserActivity extends AppCompatActivity implements Locati
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
 
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //go back previous activity
-                onBackPressed();
+        backBtn.setOnClickListener(v -> {
+            //go back previous activity
+            finish();
+        });
+
+        profileIv.setOnClickListener(v -> {
+            //pick image
+            showImagePickDialog();
+        });
+
+        gpsBtn.setOnClickListener(v -> {
+            //detect location
+            if (checkLocationPermission()) {
+                //already allowed
+                detectLocation();
+            } else {
+                //not allowed, request
+                requestLocationPermission();
             }
         });
 
-        profileIv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //pick image
-                showImagePickDialog();
-            }
-        });
-
-        gpsBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //detect location
-                if (checkLocationPermission()) {
-                    //already allowed
-                    detectLocation();
-                } else {
-                    //not allowed, request
-                    requestLocationPermission();
-                }
-            }
-        });
-
-        updateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //begin update profile
-                inputData();
-            }
+        updateBtn.setOnClickListener(v -> {
+            //begin update profile
+            inputData();
         });
     }
 
     private String name, phone, country, state, city, address;
 
-
     private void updateProfile() {
-        progressDialog.setMessage("Updating Profile...");
+        showProgressDialog("Updating Profile...");
         progressDialog.show();
 
         if (image_uri == null) {
-            //update without image
-
-
             //setup data to update
             HashMap<String, Object> hashMap = new HashMap<>();
-            hashMap.put("name", "" + name);
-            hashMap.put("phone", "" + phone);
-            hashMap.put("country", "" + country);
-            hashMap.put("state", "" + state);
-            hashMap.put("city", "" + city);
-            hashMap.put("address", "" + address);
+            hashMap.put("name", name);
+            hashMap.put("phone", phone);
+            hashMap.put("country", country);
+            hashMap.put("state", state);
+            hashMap.put("city", city);
+            hashMap.put("address", address);
             hashMap.put("latitude", "" + latitude);
             hashMap.put("longitude", "" + longitude);
 
             //update to db
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("User");
-            ref.child(firebaseAuth.getUid()).updateChildren(hashMap)
+            DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+            ref.child(Objects.requireNonNull(firebaseAuth.getUid())).updateChildren(hashMap)
                     .addOnSuccessListener(unused -> {
                         //updated
-                        progressDialog.dismiss();
+                        hideProgressDialog();
                         Toast.makeText(ProfileEditUserActivity.this, "Profile Updated...", Toast.LENGTH_SHORT).show();
                     })
                     .addOnFailureListener(e -> {
                         //failed to update
-                        progressDialog.dismiss();
+                        hideProgressDialog();
                         Toast.makeText(ProfileEditUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         } else {
@@ -200,34 +184,46 @@ public class ProfileEditUserActivity extends AppCompatActivity implements Locati
 
                             //setup data to update
                             HashMap<String, Object> hashMap = new HashMap<>();
-                            hashMap.put("name", "" + name);
-                            hashMap.put("phone", "" + phone);
-                            hashMap.put("country", "" + country);
-                            hashMap.put("state", "" + state);
-                            hashMap.put("city", "" + city);
-                            hashMap.put("address", "" + address);
+                            hashMap.put("name", name);
+                            hashMap.put("phone", phone);
+                            hashMap.put("country", country);
+                            hashMap.put("state", state);
+                            hashMap.put("city", city);
+                            hashMap.put("address", address);
                             hashMap.put("latitude", "" + latitude);
                             hashMap.put("longitude", "" + longitude);
 
                             //update to db
-                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("User");
-                            ref.child(firebaseAuth.getUid()).updateChildren(hashMap)
+                            DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+                            ref.child(Objects.requireNonNull(firebaseAuth.getUid())).updateChildren(hashMap)
                                     .addOnSuccessListener(unused -> {
                                         //updated
-                                        progressDialog.dismiss();
+                                        hideProgressDialog();
                                         Toast.makeText(ProfileEditUserActivity.this, "Profile Updated...", Toast.LENGTH_SHORT).show();
                                     })
                                     .addOnFailureListener(e -> {
                                         //failed to update
-                                        progressDialog.dismiss();
+                                        hideProgressDialog();
                                         Toast.makeText(ProfileEditUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                                     });
                         }
                     })
                     .addOnFailureListener(e -> {
-                        progressDialog.dismiss();
+                        hideProgressDialog();
                         Toast.makeText(ProfileEditUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
+        }
+    }
+
+    private void showProgressDialog(String message) {
+        ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
+    }
+
+    private void hideProgressDialog() {
+        Fragment prev = getSupportFragmentManager().findFragmentByTag("progress");
+        if (prev != null) {
+            DialogFragment df = (DialogFragment) prev;
+            df.dismiss();
         }
     }
 
@@ -255,7 +251,7 @@ public class ProfileEditUserActivity extends AppCompatActivity implements Locati
 
     private void loadMyInfo() {
         //load user info and set to views
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("User");
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
         ref.orderByChild("uid").equalTo(firebaseAuth.getUid())
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -277,11 +273,11 @@ public class ProfileEditUserActivity extends AppCompatActivity implements Locati
                             String uid = "" + ds.child("uid").getValue();
 
                             nameEt.setText(name);
-                            phoneEt.setText(name);
-                            countryEt.setText(name);
-                            stateEt.setText(name);
-                            cityEt.setText(name);
-                            addressEt.setText(name);
+                            phoneEt.setText(phone);
+                            countryEt.setText(country);
+                            stateEt.setText(state);
+                            cityEt.setText(city);
+                            addressEt.setText(address);
 
                             try {
                                 Picasso.get().load(profileImage).placeholder(R.drawable.local_grocery_store_grey).into(profileIv);
@@ -304,27 +300,24 @@ public class ProfileEditUserActivity extends AppCompatActivity implements Locati
         //dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Pick Image:")
-                .setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //handle items clicks
-                        if (which == 0) {
-                            //camera clicked
-                            if (checkCameraPermission()) {
-                                //allowed, open camera
-                                pickFromCamera();
-                            } else {
-                                requestCameraPermission();
-                            }
+                .setItems(options, (dialog, which) -> {
+                    //handle items clicks
+                    if (which == 0) {
+                        //camera clicked
+                        if (checkCameraPermission()) {
+                            //allowed, open camera
+                            pickFromCamera();
                         } else {
-                            //gallery clicked
-                            if (checkStoragePermission()) {
-                                //allowed, open gallery
-                                pickFromGallery();
-                            } else {
-                                //not allowed, request
-                                requestStoragePermission();
-                            }
+                            requestCameraPermission();
+                        }
+                    } else {
+                        //gallery clicked
+                        if (checkStoragePermission()) {
+                            //allowed, open gallery
+                            pickFromGallery();
+                        } else {
+                            //not allowed, request
+                            requestStoragePermission();
                         }
                     }
                 })
