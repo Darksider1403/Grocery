@@ -9,6 +9,7 @@
 
     <!--    Toolbar-->
     <RelativeLayout
+        android:id="@+id/toolbarRl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/shape_rect01"
@@ -74,8 +75,56 @@
             android:layout_below="@+id/shopNameTV"
 
             />
+<!--        Tab:Product,Order-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:layout_below="@+id/profileIv"
+            android:orientation="horizontal"
+            android:background="@drawable/shape_rect03"
+            android:layout_marginTop="5dp">
+
+            <TextView
+                android:id="@+id/tabProductsTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:background="@drawable/shape_rect04"
+                android:text="Products"
+                android:textColor="@color/colorBlack">
+
+            </TextView>
+            <TextView
+                android:id="@+id/tabOrdersTv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Orders"
+                android:textColor="@color/colorWhite">
+
+            </TextView>
+
+
+        </LinearLayout>
 
 
     </RelativeLayout>
+<!--    Product-->
+    <RelativeLayout
+        android:id="@+id/productRl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </RelativeLayout>
+<!--    Orders-->
+    <RelativeLayout
+        android:id="@+id/ordersRl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </RelativeLayout>
+
 
 </RelativeLayout>

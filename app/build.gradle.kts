@@ -61,6 +61,8 @@ dependencies {
 
     implementation (libs.circularimageview)
     implementation (libs.android.image.cropper)
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     // image loading from firebase
     implementation (libs.picasso)

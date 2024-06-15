@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,9 +28,10 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class MainSellerActivity extends AppCompatActivity {
-    private TextView nameTv,shopNameTV,emailTV;
+    private TextView nameTv,shopNameTV,emailTV,tabProductsTv,tabOrdersTv;
     private ImageButton logoutBtn, editProfileBtn,addProductBtn;
     private ImageView profileIv;
+    private RelativeLayout productsRl,ordersRl;
 
     private FirebaseAuth firebaseAuth;
     @Override
@@ -40,14 +42,19 @@ public class MainSellerActivity extends AppCompatActivity {
         nameTv = findViewById(R.id.nameTv);
         shopNameTV = findViewById(R.id.shopNameTV);
         emailTV = findViewById(R.id.emailTV);
+        tabProductsTv= findViewById(R.id.tabProductsTv);
+        tabOrdersTv= findViewById(R.id.tabOrdersTv);
 
         logoutBtn = findViewById(R.id.logoutBtn);
         editProfileBtn = findViewById(R.id.editProfileBtn);
         addProductBtn = findViewById(R.id.addProductBtn);
         profileIv = findViewById(R.id.profileIv);
+        productsRl= findViewById(R.id.productRl);
+        ordersRl= findViewById(R.id.ordersRl);
 
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
+        showProductsUI();
 
         logoutBtn.setOnClickListener(v -> {
             // make offline
@@ -69,6 +76,39 @@ public class MainSellerActivity extends AppCompatActivity {
                 startActivity(new Intent(MainSellerActivity.this, AddProductActivity.class));
             }
         });
+        tabOrdersTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showOrdersUI();
+            }
+        });
+        tabProductsTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showProductsUI();
+            }
+        });
+    }
+
+    private void showProductsUI()
+
+    {
+        productsRl.setVisibility(View.VISIBLE);
+        ordersRl.setVisibility(View.GONE);
+        tabProductsTv.setTextColor(getResources().getColor(R.color.colorBlack));
+        tabProductsTv.setBackgroundResource(R.drawable.shape_rect04);
+        tabOrdersTv.setTextColor(getResources().getColor(R.color.colorWhite));
+        tabOrdersTv.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+    }
+
+    private void showOrdersUI()
+    {
+        productsRl.setVisibility(View.GONE);
+        ordersRl.setVisibility(View.VISIBLE);
+        tabProductsTv.setTextColor(getResources().getColor(R.color.colorWhite));
+        tabProductsTv.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+        tabOrdersTv.setTextColor(getResources().getColor(R.color.colorBlack));
+        tabOrdersTv.setBackgroundResource(R.drawable.shape_rect04);
     }
 
     private void makeMeOffline() {
