@@ -55,7 +55,7 @@
         android:background="@drawable/shape_rect02"
         android:drawableStart="@drawable/ic_title_gray"
         android:drawablePadding="10dp"
-        android:inputType="textPersonName||textCapWords"
+        android:inputType="textPersonName|textCapWords"
         android:layout_below = "@+id/productIconIv"/>
 
     <EditText
@@ -67,7 +67,7 @@
         android:background="@drawable/shape_rect02"
         android:drawableStart="@drawable/ic_title_gray"
         android:drawablePadding="10dp"
-        android:inputType="textCapSentences||textMultiLine"
+        android:inputType="textCapSentences|textMultiLine"
         android:layout_below = "@id/titleET"/>
     <TextView
         android:layout_width="match_parent"
@@ -79,7 +79,7 @@
         android:background="@drawable/shape_rect02"
         android:drawableStart="@drawable/ic_category"
         android:drawablePadding="10dp"
-        android:inputType="textCapSentences||textMultiLine"
+        android:inputType="textCapSentences|textMultiLine"
         android:layout_below = "@id/descriptionEt"/>
     <EditText
         android:layout_width="match_parent"

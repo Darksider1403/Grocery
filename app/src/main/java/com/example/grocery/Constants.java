@@ -1,7 +1,7 @@
 package com.example.grocery;
 
 public class Constants {
-     public static  final String [] options = {
+     public static  final String [] productCategories = {
             "Beverages",
             "Beauty & Personal Care",
             "Baby Kids",
