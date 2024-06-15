@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,13 +21,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Objects;
 
 public class MainSellerActivity extends AppCompatActivity {
-    private TextView nameTv;
-    private ImageButton logoutBtn, editProfileBtn;
+    private TextView nameTv,shopNameTV,emailTV;
+    private ImageButton logoutBtn, editProfileBtn,addProductBtn;
+    private ImageView profileIv;
 
     private FirebaseAuth firebaseAuth;
     @Override
@@ -35,8 +38,13 @@ public class MainSellerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_seller);
 
         nameTv = findViewById(R.id.nameTv);
+        shopNameTV = findViewById(R.id.shopNameTV);
+        emailTV = findViewById(R.id.emailTV);
+
         logoutBtn = findViewById(R.id.logoutBtn);
         editProfileBtn = findViewById(R.id.editProfileBtn);
+        addProductBtn = findViewById(R.id.addProductBtn);
+        profileIv = findViewById(R.id.profileIv);
 
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
@@ -53,6 +61,12 @@ public class MainSellerActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //open edit profile activity
                 startActivity(new Intent(MainSellerActivity.this, ProfileEditSellerActivity.class));
+            }
+        });
+        addProductBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainSellerActivity.this, AddProductActivity.class));
             }
         });
     }
@@ -100,8 +114,19 @@ public class MainSellerActivity extends AppCompatActivity {
                         for (DataSnapshot ds : snapshot.getChildren()) {
                             String name = "" + ds.child("name").getValue();
                             String accountType = "" + ds.child("accountType").getValue();
+                            String email = "" + ds.child("email").getValue();
+                            String shopName = "" + ds.child("shopName").getValue();
+                            String profileImage = "" + ds.child("profileImage").getValue();
+
 
                             nameTv.setText(name);
+                            shopNameTV.setText(shopName);
+                            emailTV.setText(email);
+                            try {
+                                Picasso.get().load(profileImage).placeholder(R.drawable.local_grocery_store_grey).into(profileIv);
+                            } catch (Exception e){
+                                profileIv.setImageResource(R.drawable.local_grocery_store_grey);
+                            }
                         }
                     }
 
