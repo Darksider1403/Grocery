@@ -1,9 +1,10 @@
 package com.example.grocery;
 
 public class ModelProduct {
-    String productId,productTitle,productDescription,productCategory,productQuantity, productIcon,originalPrice,discountPrice,discountNotediscountAvailable,timeStamp,uid;
+    String productId, productTitle, productDescription, productCategory, productQuantity, discountNote,
+            productIcon, originalPrice, discountPrice, discountNoteAvailable, timeStamp, uid;
 
-    public ModelProduct(String productId, String productTitle, String productDescription, String productCategory, String productQuantity, String productIcon, String originalPrice, String discountPrice, String discountNotediscountAvailable, String timeStamp, String uid) {
+    public ModelProduct(String productId, String productTitle, String productDescription, String productCategory, String productQuantity, String productIcon, String originalPrice, String discountPrice, String discountNotediscountAvailable, String timeStamp, String uid, String discountNote) {
         this.productId = productId;
         this.productTitle = productTitle;
         this.productDescription = productDescription;
@@ -12,9 +13,18 @@ public class ModelProduct {
         this.productIcon = productIcon;
         this.originalPrice = originalPrice;
         this.discountPrice = discountPrice;
-        this.discountNotediscountAvailable = discountNotediscountAvailable;
+        this.discountNoteAvailable = discountNotediscountAvailable;
         this.timeStamp = timeStamp;
         this.uid = uid;
+        this.discountNote = discountNote;
+    }
+
+    public String getDiscountNote() {
+        return discountNote;
+    }
+
+    public void setDiscountNote(String discountNote) {
+        this.discountNote = discountNote;
     }
 
     public String getProductId() {
@@ -81,12 +91,12 @@ public class ModelProduct {
         this.discountPrice = discountPrice;
     }
 
-    public String getDiscountNotediscountAvailable() {
-        return discountNotediscountAvailable;
+    public String getDiscountNoteAvailable() {
+        return discountNoteAvailable;
     }
 
-    public void setDiscountNotediscountAvailable(String discountNotediscountAvailable) {
-        this.discountNotediscountAvailable = discountNotediscountAvailable;
+    public void setDiscountNoteAvailable(String discountNoteAvailable) {
+        this.discountNoteAvailable = discountNoteAvailable;
     }
 
     public String getTimeStamp() {

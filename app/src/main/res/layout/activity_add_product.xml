@@ -15,11 +15,12 @@
         android:padding="10dp">
 
         <ImageButton
+            android:id="@+id/backBtn"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:id="@+id/backBtn"
-            android:src="@drawable/baseline_back_white"
-            android:background="@null"/>
+            android:background="@null"
+            android:src="@drawable/baseline_back_white" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -27,128 +28,129 @@
             android:text="Add Product"
             android:textColor="@color/colorWhite"
             android:textSize="20sp"
-            android:textStyle="bold"/>
-
-
+            android:textStyle="bold" />
 
     </RelativeLayout>
-    
+
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-<com.blogspot.atifsoftwares.circularimageview.CircularImageView
-    android:layout_width="100dp"
-    android:layout_height="100dp"
-    android:id="@+id/productIconTV"
-    android:layout_centerHorizontal="true"
-    android:layout_marginTop="20dp"
-    android:src="@drawable/baseline_add_shopping_primary"
-    app:c_border="true"
-    app:c_border_color="@color/colorPrimaryDark"
-    app:c_border_width="1dp"/>
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/titleET"
-        android:layout_margin="5dp"
-        android:hint="Title"
-        android:background="@drawable/shape_rect02"
-        android:drawableStart="@drawable/ic_title_gray"
-        android:drawablePadding="10dp"
-        android:inputType="textPersonName|textCapWords"
-        android:layout_below = "@+id/productIconIv"/>
+        android:layout_height="wrap_content">
+
+    <com.blogspot.atifsoftwares.circularimageview.CircularImageView
+        android:id="@+id/productIconTV"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/add_shopping_cart_primary"
+        app:c_border="true"
+        app:c_border_color="@color/colorPrimaryDark"
+        app:c_border_width="1dp" />
+    </RelativeLayout>
 
     <EditText
+        android:id="@+id/titleET"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/descriptionEt"
+        android:layout_below="@+id/productIconIv"
         android:layout_margin="5dp"
-        android:hint="Decription"
         android:background="@drawable/shape_rect02"
         android:drawableStart="@drawable/ic_title_gray"
         android:drawablePadding="10dp"
-        android:inputType="textCapSentences|textMultiLine"
-        android:layout_below = "@id/titleET"/>
-    <TextView
+        android:hint="Title"
+        android:inputType="textPersonName|textCapWords" />
+
+    <EditText
+        android:id="@+id/descriptionEt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/categoryTv"
+        android:layout_below="@id/titleET"
         android:layout_margin="5dp"
-        android:hint="Category"
-        android:drawableEnd="@drawable/ic_down_grey"
+        android:background="@drawable/shape_rect02"
+        android:drawableStart="@drawable/ic_title_gray"
+        android:drawablePadding="10dp"
+        android:hint="Decription"
+        android:inputType="textCapSentences|textMultiLine" />
+
+    <TextView
+        android:id="@+id/categoryTv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/descriptionEt"
+        android:layout_margin="5dp"
         android:background="@drawable/shape_rect02"
         android:drawableStart="@drawable/ic_category"
+        android:drawableEnd="@drawable/ic_down_grey"
         android:drawablePadding="10dp"
-        android:inputType="textCapSentences|textMultiLine"
-        android:layout_below = "@id/descriptionEt"/>
+        android:hint="Category"
+        android:inputType="textCapSentences|textMultiLine" />
+
     <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/quantityEt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/titleET"
         android:layout_margin="5dp"
+        android:background="@drawable/shape_rect02"
+        android:drawableStart="@drawable/local_grocery_store_primary"
+        android:drawablePadding="10dp"
         android:hint="Quantity"
-        android:background="@drawable/shape_rect02"
-        android:drawableStart="@drawable/baseline_shopping_cart"
-        android:drawablePadding="10dp"
-        android:inputType="numberDecimal"
-        android:layout_below = "@id/titleET"/>
+        android:inputType="numberDecimal" />
 
     <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/priceEt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/titleET"
         android:layout_margin="5dp"
+        android:background="@drawable/shape_rect02"
+        android:drawableStart="@drawable/local_grocery_store_primary"
+        android:drawablePadding="10dp"
         android:hint="Price"
-        android:background="@drawable/shape_rect02"
-        android:drawableStart="@drawable/baseline_shopping_cart"
-        android:drawablePadding="10dp"
-        android:inputType="numberDecimal"
-        android:layout_below = "@id/titleET"/>
-    <androidx.appcompat.widget.SwitchCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/discountSwitch"
-            android:layout_margin="5dp"
-            android:layout_below="@id/priceEt"
-            android:text="discount"
-            />
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/discountedPriceEt"
-        android:layout_margin="5dp"
-        android:hint="Price discount"
-        android:background="@drawable/shape_rect02"
-        android:drawableStart="@drawable/baseline_shopping_cart"
-        android:drawablePadding="10dp"
-        android:inputType="numberDecimal"
-        android:layout_below = "@id/discountSwitch"/>
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/discountedNoteEt"
-        android:layout_margin="5dp"
-        android:hint="Price note"
-        android:background="@drawable/shape_rect02"
-        android:drawableStart="@drawable/baseline_shopping_cart"
-        android:drawablePadding="10dp"
-        android:inputType="numberDecimal"
-        android:layout_below = "@id/discountedPriceEt"/>
-    <Button
+        android:inputType="numberDecimal" />
 
-         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/discountSwitch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/priceEt"
+        android:layout_margin="5dp"
+        android:text="discount" />
+
+    <EditText
+        android:id="@+id/discountedPriceEt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/discountSwitch"
+        android:layout_margin="5dp"
+        android:background="@drawable/shape_rect02"
+        android:drawableStart="@drawable/local_grocery_store_primary"
+        android:drawablePadding="10dp"
+        android:hint="Price discount"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/discountedNoteEt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/discountedPriceEt"
+        android:layout_margin="5dp"
+        android:background="@drawable/shape_rect02"
+        android:drawableStart="@drawable/local_grocery_store_primary"
+        android:drawablePadding="10dp"
+        android:hint="Price note"
+        android:inputType="numberDecimal" />
+
+    <Button
         android:id="@+id/addProductBtn"
-        android:text="add product"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@id/discountedNoteEt"
         android:layout_centerHorizontal="true"
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:minWidth="150dp"
         android:layout_marginTop="5dp"
+        android:minWidth="150dp"
+        android:text="add product" />
 
 
-    />
-
-
-    />
 </LinearLayout>

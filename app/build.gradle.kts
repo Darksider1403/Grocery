@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
-    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
@@ -44,9 +43,6 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {
@@ -54,6 +50,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.material)
 
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
@@ -61,8 +58,8 @@ dependencies {
 
     implementation (libs.circularimageview)
     implementation (libs.android.image.cropper)
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation(libs.material)
+    implementation(libs.recyclerview)
 
     // image loading from firebase
     implementation (libs.picasso)

@@ -45,6 +45,7 @@
     </RelativeLayout>
 
     <com.blogspot.atifsoftwares.circularimageview.CircularImageView
+        android:id="@+id/profileIv"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_below="@+id/toolbarRl"

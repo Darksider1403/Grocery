@@ -20,6 +20,7 @@ composeBom = "2023.08.00"
 navigationFragment = "2.7.7"
 navigationUi = "2.7.7"
 picasso = "2.71828"
+recyclerview = "1.3.2"
 
 [libraries]
 android-image-cropper = { module = "com.theartofdev.edmodo:android-image-cropper", version.ref = "androidImageCropper" }
@@ -38,6 +39,7 @@ lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtim
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
+recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 ui = { group = "androidx.compose.ui", name = "ui" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }

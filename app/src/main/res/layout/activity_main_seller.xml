@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/shape_rect01"
         android:padding="10dp">
+
         <ImageButton
             android:id="@+id/logoutBtn"
             android:layout_width="30dp"
@@ -36,7 +37,7 @@
             android:layout_height="30dp"
             android:background="@null"
             android:layout_toStartOf="@id/editProfileBtn"
-            android:src="@drawable/baseline_add_shopping_white" />
+            android:src="@drawable/add_shopping_cart_white" />
 
         <com.blogspot.atifsoftwares.circularimageview.CircularImageView
             android:layout_width="70dp"
@@ -103,9 +104,7 @@
                 android:gravity="center"
                 android:text="Orders"
                 android:textColor="@color/colorWhite">
-
             </TextView>
-
 
         </LinearLayout>
 
@@ -114,8 +113,54 @@
 <!--    Product-->
     <RelativeLayout
         android:id="@+id/productRl"
+        android:layout_below="@id/toolbarRl"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+<!--        SearchView-->
+        <EditText
+            android:id="@+id/searchProductEt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@drawable/shape_rect02"
+            android:layout_toStartOf="@+id/filterProductBtn"
+            android:drawableStart="@drawable/search_grey"
+            android:drawablePadding="10dp"
+            android:padding="10dp"
+            android:hint="Search"/>
+
+        <!--show filtered product title-->
+        <ImageButton
+            android:id="@+id/filterProductBtn"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
+            android:background="@null"
+            android:scaleType="fitXY"
+            android:src="@drawable/filter_gray"/>
+
+        <TextView
+            android:id="@+id/filteredProductsTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/searchProductEt"
+            android:textColor="@color/colorBlack"
+            android:text="Showing All"
+            android:layout_marginStart="5dp"
+            android:layout_marginBottom="5dp"/>
+
+
+        <!--RecycleView: show products-->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/productsRv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/filteredProductsTv"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/row_product_seller"/>
 
     </RelativeLayout>
 <!--    Orders-->
@@ -123,7 +168,6 @@
         android:id="@+id/ordersRl"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
     </RelativeLayout>
 
 

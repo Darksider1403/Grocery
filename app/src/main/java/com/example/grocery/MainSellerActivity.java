@@ -1,9 +1,13 @@
 package com.example.grocery;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -11,9 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,16 +30,21 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
 public class MainSellerActivity extends AppCompatActivity {
-    private TextView nameTv,shopNameTV,emailTV,tabProductsTv,tabOrdersTv;
-    private ImageButton logoutBtn, editProfileBtn,addProductBtn;
+    private TextView nameTv, shopNameTV, emailTV, tabProductsTv, tabOrdersTv, filteredProductsTv;
+    private EditText searchProductEt;
+    private ImageButton logoutBtn, editProfileBtn, addProductBtn, filterProductBtn;
     private ImageView profileIv;
-    private RelativeLayout productsRl,ordersRl;
-
+    private RelativeLayout productsRl, ordersRl;
+    private RecyclerView productsRv;
     private FirebaseAuth firebaseAuth;
+    private ArrayList<ModelProduct> productList;
+    private AdapterProductSeller adapterProductSeller;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,19 +53,48 @@ public class MainSellerActivity extends AppCompatActivity {
         nameTv = findViewById(R.id.nameTv);
         shopNameTV = findViewById(R.id.shopNameTV);
         emailTV = findViewById(R.id.emailTV);
-        tabProductsTv= findViewById(R.id.tabProductsTv);
-        tabOrdersTv= findViewById(R.id.tabOrdersTv);
+        tabProductsTv = findViewById(R.id.tabProductsTv);
+        tabOrdersTv = findViewById(R.id.tabOrdersTv);
+
+        searchProductEt = findViewById(R.id.searchProductEt);
+        filteredProductsTv = findViewById(R.id.filteredProductsTv);
 
         logoutBtn = findViewById(R.id.logoutBtn);
         editProfileBtn = findViewById(R.id.editProfileBtn);
         addProductBtn = findViewById(R.id.addProductBtn);
+        filterProductBtn = findViewById(R.id.filterProductBtn);
         profileIv = findViewById(R.id.profileIv);
-        productsRl= findViewById(R.id.productRl);
-        ordersRl= findViewById(R.id.ordersRl);
+        productsRl = findViewById(R.id.productRl);
+        ordersRl = findViewById(R.id.ordersRl);
+        productsRv = findViewById(R.id.productsRv);
 
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
+        loadAllProducts();
+
         showProductsUI();
+
+        // search
+        searchProductEt.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                try {
+                    adapterProductSeller.getFilter().filter(s);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         logoutBtn.setOnClickListener(v -> {
             // make offline
@@ -63,36 +103,102 @@ public class MainSellerActivity extends AppCompatActivity {
             makeMeOffline();
         });
 
-        editProfileBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //open edit profile activity
-                startActivity(new Intent(MainSellerActivity.this, ProfileEditSellerActivity.class));
-            }
+        editProfileBtn.setOnClickListener(v -> {
+            //open edit profile activity
+            startActivity(new Intent(MainSellerActivity.this, ProfileEditSellerActivity.class));
         });
-        addProductBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainSellerActivity.this, AddProductActivity.class));
-            }
-        });
-        tabOrdersTv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showOrdersUI();
-            }
-        });
-        tabProductsTv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showProductsUI();
-            }
+
+        addProductBtn.setOnClickListener(v -> startActivity(new Intent(MainSellerActivity.this, AddProductActivity.class)));
+        tabOrdersTv.setOnClickListener(v -> showOrdersUI());
+        tabProductsTv.setOnClickListener(v -> showProductsUI());
+        filterProductBtn.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainSellerActivity.this);
+            builder.setTitle("Choose Category:")
+                    .setItems(Constants.productCategories1, (dialog, which) -> {
+                        // get selected item
+                        String selectedItem = Constants.productCategories1[which];
+                        filteredProductsTv.setText(selectedItem);
+
+                        if (selectedItem.equals("All")) {
+                            // load all
+                            loadAllProducts();
+                        } else {
+                            // load filtered
+                            loadFilteredProducts(selectedItem);
+                        }
+                    })
+                    .show();
         });
     }
 
-    private void showProductsUI()
+    private void loadFilteredProducts(String selectedItem) {
+        productList = new ArrayList<>();
 
-    {
+        // get all products
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        // before getting reset list
+                        productList.clear();
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            String productCategory = "" + ds.child("productCategory").getValue();
+
+                            // if selected category matches product category then add in list
+                            if (selectedItem.equals(productCategory)) {
+                                ModelProduct modelProduct = ds.getValue(ModelProduct.class);
+                                productList.add(modelProduct);
+                            }
+                        }
+
+                        // setup adapter
+                        adapterProductSeller = new AdapterProductSeller(MainSellerActivity.this, productList);
+
+                        // set adapter
+                        productsRv.setAdapter(adapterProductSeller);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
+    private void loadAllProducts() {
+        productList = new ArrayList<>();
+
+        // get all products
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        // before getting reset list
+                        productList.clear();
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            ModelProduct modelProduct = ds.getValue(ModelProduct.class);
+                            productList.add(modelProduct);
+                        }
+
+                        // setup adapter
+                        adapterProductSeller = new AdapterProductSeller(MainSellerActivity.this, productList);
+
+                        // set adapter
+                        productsRv.setAdapter(adapterProductSeller);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
+
+
+    private void showProductsUI() {
         productsRl.setVisibility(View.VISIBLE);
         ordersRl.setVisibility(View.GONE);
         tabProductsTv.setTextColor(getResources().getColor(R.color.colorBlack));
@@ -101,8 +207,7 @@ public class MainSellerActivity extends AppCompatActivity {
         tabOrdersTv.setBackgroundColor(getResources().getColor(android.R.color.transparent));
     }
 
-    private void showOrdersUI()
-    {
+    private void showOrdersUI() {
         productsRl.setVisibility(View.GONE);
         ordersRl.setVisibility(View.VISIBLE);
         tabProductsTv.setTextColor(getResources().getColor(R.color.colorWhite));
@@ -164,7 +269,7 @@ public class MainSellerActivity extends AppCompatActivity {
                             emailTV.setText(email);
                             try {
                                 Picasso.get().load(profileImage).placeholder(R.drawable.local_grocery_store_grey).into(profileIv);
-                            } catch (Exception e){
+                            } catch (Exception e) {
                                 profileIv.setImageResource(R.drawable.local_grocery_store_grey);
                             }
                         }
