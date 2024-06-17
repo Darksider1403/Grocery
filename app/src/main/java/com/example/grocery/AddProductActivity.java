@@ -81,7 +81,9 @@ public class AddProductActivity extends AppCompatActivity {
         backBtn = findViewById(R.id.backBtn);
         productIconTV = findViewById(R.id.productIconTV);
         titleEt = findViewById(R.id.titleET);
+        descriptionEt = findViewById(R.id.descriptionEt);
         categoryTv = findViewById(R.id.categoryTv);
+        quantityEt = findViewById(R.id.quantityEt);
         priceEt = findViewById(R.id.priceEt);
         discountedPriceEt = findViewById(R.id.discountedPriceEt);
         discountedNoteEt = findViewById(R.id.discountedNoteEt);
@@ -102,9 +104,6 @@ public class AddProductActivity extends AppCompatActivity {
         // init permission arrays
         cameraPermissions = new String[]{android.Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
-
-
-
 
         //if discountSwitch is checked:show discountPriceEt, discountNoteEt, if discountSwitch is not checked: hide discountPriuceEt, discountNoteEt
         discountSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -132,7 +131,6 @@ public class AddProductActivity extends AppCompatActivity {
             //3 add data to db
             inputData();
         });
-
     }
 
     private String productTitle, productDescription, productCategory, productQuantity, originalPrice, discountPrice, discountNote;
@@ -164,6 +162,7 @@ public class AddProductActivity extends AppCompatActivity {
             Toast.makeText(this, "Price is required", Toast.LENGTH_SHORT).show();
             return;
         }
+
         if (discountAvailable) {
             discountPrice = discountedPriceEt.getText().toString().trim();
             discountNote = discountedNoteEt.getText().toString().trim();
@@ -174,7 +173,6 @@ public class AddProductActivity extends AppCompatActivity {
         } else {
             discountPrice = "0";
             discountNote = "";
-
         }
         // add data to db
         addProduct();
@@ -195,7 +193,6 @@ public class AddProductActivity extends AppCompatActivity {
     private void addProduct() {
         showProgressDialog("Adding product...");
         progressDialog.show();
-        //
 
         String timestamp = "" + System.currentTimeMillis();
         if (image_uri == null) {

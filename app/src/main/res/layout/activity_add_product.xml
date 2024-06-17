@@ -152,5 +152,4 @@
         android:minWidth="150dp"
         android:text="add product" />
 
-
 </LinearLayout>
