@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
@@ -42,6 +43,9 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
 

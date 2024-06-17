@@ -28,11 +28,15 @@
         android:theme="@style/AppTheme.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".EditProductActivity"
+            android:exported="false"
+            android:label="@string/title_activity_edit_product"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".AddProductActivity"
             android:exported="false"
             android:label="@string/title_activity_add_product"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".ProfileEditSellerActivity"
             android:enableOnBackInvokedCallback="true"

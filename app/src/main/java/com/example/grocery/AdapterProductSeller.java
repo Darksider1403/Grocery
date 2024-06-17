@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -190,13 +191,19 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //open edit product activity
+                bottomSheetDialog.dismiss();
+                //open edit product activity, pass id of product
+                Intent intent = new Intent(context, EditProductActivity.class);
+                intent.putExtra("productId", id);
+                context.startActivity(intent);
+
             }
         });
         //delete click
         deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                bottomSheetDialog.dismiss();
                 //show delete confirm dialog
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle("Delete")
@@ -214,7 +221,7 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
                                 //cancel, dismiss dialog
                                 dialog.dismiss();
                             }
-                        })
+                        });
             }
         });
         //back click

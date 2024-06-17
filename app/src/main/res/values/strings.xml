@@ -30,4 +30,5 @@
     <string name="name">Name</string>
     <string name="title_activity_add_product">AddProductActivity</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_edit_product">EditProductActivity</string>
 </resources>
