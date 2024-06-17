@@ -1,7 +1,5 @@
 package com.example.grocery.activities;
 
-import static com.example.grocery.activities.RegisterSellerActivity.LOCATION_REQUEST_CODE;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
@@ -28,6 +26,7 @@ import android.widget.Toast;
 import android.Manifest;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -60,7 +59,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     private TextView registerSellerTv;
 
     //permission constants
-    private static final int LOCACTION_REQUEST_CODE = 100;
+    private static final int LOCATION_REQUEST_CODE = 100;
     private static final int CAMERA_REQUEST_CODE = 200;
     private static final int STORAGE_REQUEST_CODE = 300;
 
@@ -136,6 +135,25 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
             //open register seller activity
             startActivity(new Intent(RegisterUserActivity.this, RegisterSellerActivity.class));
         });
+
+        galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                result -> {
+                    if (result != null) {
+                        profileIv.setImageURI(result);
+                        image_uri = result;
+                    }
+                }
+        );
+
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                result -> {
+                    if (result) {
+                        profileIv.setImageURI(image_uri);
+                    }
+                }
+        );
     }
 
     private String fullName, phoneNumber, country, state, city, address, email, password, confirmPassword;
@@ -412,7 +430,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     }
 
     private void requestLocationPermission() {
-        ActivityCompat.requestPermissions(this, locationPermission, LOCACTION_REQUEST_CODE);
+        ActivityCompat.requestPermissions(this, locationPermission, LOCATION_REQUEST_CODE);
     }
 
     private boolean checkStorePermission() {
@@ -468,7 +486,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
-            case LOCATION_REQUEST_CODE: {
+            case RegisterSellerActivity.LOCATION_REQUEST_CODE: {
                 if ((grantResults.length > 0)) {
                     boolean locationAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
                     if (locationAccepted) {

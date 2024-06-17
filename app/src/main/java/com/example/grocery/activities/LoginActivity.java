@@ -64,13 +64,9 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(LoginActivity.this,
                         ForgotPasswordActivity.class)));
 
-        noAccountTv.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, RegisterUserActivity.class));
-        });
+        noAccountTv.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, RegisterUserActivity.class)));
 
-        loginBtn.setOnClickListener(v -> {
-            loginUser();
-        });
+        loginBtn.setOnClickListener(v -> loginUser());
     }
 
     private String email, password;

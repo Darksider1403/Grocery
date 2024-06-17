@@ -25,6 +25,7 @@ import android.widget.Toast;
 import android.Manifest;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -132,6 +133,25 @@ public class RegisterSellerActivity extends AppCompatActivity implements Locatio
             //register user
             inputData();
         });
+
+        galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                result -> {
+                    if (result != null) {
+                        profileIv.setImageURI(result);
+                        image_uri = result;
+                    }
+                }
+        );
+
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                result -> {
+                    if (result) {
+                        profileIv.setImageURI(image_uri);
+                    }
+                }
+        );
     }
 
     private String fullName, shopName, phoneNumber, deliveryFee, country, state, city, address, email, password, confirmPassword;
