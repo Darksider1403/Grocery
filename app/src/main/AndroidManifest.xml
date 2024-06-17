@@ -28,31 +28,31 @@
         android:theme="@style/AppTheme.NoActionBar"
         tools:targetApi="31">
         <activity
-            android:name=".EditProductActivity"
+            android:name=".activities.EditProductActivity"
             android:exported="false"
             android:label="@string/title_activity_edit_product"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".AddProductActivity"
+            android:name=".activities.AddProductActivity"
             android:exported="false"
             android:label="@string/title_activity_add_product"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".ProfileEditSellerActivity"
+            android:name=".activities.ProfileEditSellerActivity"
             android:enableOnBackInvokedCallback="true"
             tools:targetApi="tiramisu" />
         <activity
-            android:name=".ProfileEditUserActivity"
+            android:name=".activities.ProfileEditUserActivity"
             android:enableOnBackInvokedCallback="true"
             tools:targetApi="tiramisu" />
-        <activity android:name=".RegisterUserActivity" />
-        <activity android:name=".LoginActivity" />
-        <activity android:name=".RegisterSellerActivity" />
-        <activity android:name=".ForgotPasswordActivity" />
-        <activity android:name=".MainSellerActivity" />
-        <activity android:name=".MainUserActivity" />
+        <activity android:name=".activities.RegisterUserActivity" />
+        <activity android:name=".activities.LoginActivity" />
+        <activity android:name=".activities.RegisterSellerActivity" />
+        <activity android:name=".activities.ForgotPasswordActivity" />
+        <activity android:name=".activities.MainSellerActivity" />
+        <activity android:name=".activities.MainUserActivity" />
         <activity
-            android:name=".SplashActivity"
+            android:name=".activities.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

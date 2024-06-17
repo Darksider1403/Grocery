@@ -1,4 +1,4 @@
-package com.example.grocery;
+package com.example.grocery.models;
 
 public class ModelProduct {
     String productId, productTitle, productDescription, productCategory, productQuantity, discountNote,
@@ -17,6 +17,9 @@ public class ModelProduct {
         this.timeStamp = timeStamp;
         this.uid = uid;
         this.discountNote = discountNote;
+    }
+
+    public ModelProduct() {
     }
 
     public String getDiscountNote() {

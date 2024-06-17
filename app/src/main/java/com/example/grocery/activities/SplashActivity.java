@@ -1,4 +1,4 @@
-package com.example.grocery;
+package com.example.grocery.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.grocery.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,6 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 public class SplashActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private static final String TAG = "SplashActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,8 +34,9 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseAuth.setLanguageCode("en"); // Set to your desired locale
 
-        // start login activity after 1sec
+        // Start login activity after 1sec
         new Handler().postDelayed(() -> {
             FirebaseUser user = firebaseAuth.getCurrentUser();
 
@@ -43,42 +46,41 @@ public class SplashActivity extends AppCompatActivity {
                 finish();
             } else {
                 Log.d(TAG, "User logged in, checking user type.");
-                // check user type
+                // Check user type
                 checkUserType();
             }
         }, 1000);
-
     }
 
     private void checkUserType() {
-        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
-        ref.orderByChild("uid").equalTo(firebaseAuth.getUid())
+        String uid = firebaseAuth.getUid();
+        Log.d(TAG, "Checking user type for UID: " + uid);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("Users");
+
+        ref.orderByChild("uid").equalTo(uid)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        Log.d(TAG, "onDataChange called...");
+                        Log.d(TAG, "Snapshot exists: " + snapshot.exists());
                         if (snapshot.exists()) {
-                            boolean userFound = false;
-                            for (DataSnapshot ds : snapshot.getChildren()) {
-                                String accountType = "" + ds.child("accountType").getValue();
-                                Log.d(TAG, "Account type: " + accountType);
+                            for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                String accountType = "" + userSnapshot.child("accountType").getValue();
+                                Log.d(TAG, "Account Type: " + accountType);
+
                                 if ("Seller".equals(accountType)) {
-                                    userFound = true;
+                                    Log.d(TAG, "User is seller, navigating to MainSellerActivity.");
                                     startActivity(new Intent(SplashActivity.this, MainSellerActivity.class));
                                     finish();
                                 } else {
-                                    userFound = true;
+                                    Log.d(TAG, "User is buyer, navigating to MainUserActivity.");
                                     startActivity(new Intent(SplashActivity.this, MainUserActivity.class));
                                     finish();
                                 }
                             }
-                            if (!userFound) {
-                                Log.d(TAG, "User data not found, navigating to LoginActivity.");
-                                startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-                                finish();
-                            }
                         } else {
-                            Log.d(TAG, "Snapshot does not exist, navigating to LoginActivity.");
+                            Log.d(TAG, "User snapshot does not exist.");
                             startActivity(new Intent(SplashActivity.this, LoginActivity.class));
                             finish();
                         }

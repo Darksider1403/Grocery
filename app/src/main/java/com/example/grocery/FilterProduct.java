@@ -3,6 +3,9 @@ package com.example.grocery;
 import android.annotation.SuppressLint;
 import android.widget.Filter;
 
+import com.example.grocery.adapters.AdapterProductSeller;
+import com.example.grocery.models.ModelProduct;
+
 import java.util.ArrayList;
 
 public class FilterProduct extends Filter {

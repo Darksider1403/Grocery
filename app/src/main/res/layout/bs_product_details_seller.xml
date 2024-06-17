@@ -47,11 +47,12 @@
     </RelativeLayout>
 
     <ImageView
+        android:layout_below="@id/toolbarRl"
         android:id="@+id/productIconIv"
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="20dp"
         android:adjustViewBounds="true"
         android:background="@color/colorPrimary"
         android:padding="5dp"

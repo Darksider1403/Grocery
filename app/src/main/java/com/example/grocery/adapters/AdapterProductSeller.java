@@ -1,9 +1,8 @@
-package com.example.grocery;
+package com.example.grocery.adapters;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
@@ -19,16 +18,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.grocery.FilterProduct;
+import com.example.grocery.R;
+import com.example.grocery.activities.EditProductActivity;
+import com.example.grocery.models.ModelProduct;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -47,7 +45,6 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
         /* holds views of recycler view */
         private ImageView productIconIv;
         private TextView discountedNoteIv, titleTv, quantityTv, discountedPriceTv, originalPriceTv;
-
 
         public HolderProductSeller(@NonNull View itemView) {
             super(itemView);
@@ -94,7 +91,7 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
         holder.discountedPriceTv.setText("$" + discountPrice);
         holder.originalPriceTv.setText("$" + originalPrice);
 
-        if (discountAvailable.equals("true")) {
+        if (discountAvailable != null && discountAvailable.equals("true")) {
             // product is on discount
             holder.discountedNoteIv.setVisibility(View.VISIBLE);
             holder.discountedPriceTv.setVisibility(View.VISIBLE);
@@ -112,16 +109,11 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
             holder.productIconIv.setImageResource(R.drawable.add_shopping_cart_primary);
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //handle item clicks, show item details (in bottom sheet)
-                detailsBottomSheet(modelProduct); //here modelProduct contains detail of clicked product
-            }
-
-            // handle item clicks, show item details
+        // handle item clicks, show item details
+        holder.itemView.setOnClickListener(v -> {
+            //handle item clicks, show item details (in bottom sheet)
+            detailsBottomSheet(modelProduct); //here modelProduct contains detail of clicked product
         });
-
     }
 
     private void detailsBottomSheet(ModelProduct modelProduct) {
@@ -131,7 +123,6 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
         View view = LayoutInflater.from(context).inflate(R.layout.bs_product_details_seller, null);
         // set view to bottomsheet
         bottomSheetDialog.setContentView(view);
-
 
         //init views of bottomsheet
         ImageButton backBtn = view.findViewById(R.id.backBtn);
@@ -166,9 +157,9 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
         categoryTv.setText(productCategory);
         quantityTv.setText(quantity);
         discountNoteTv.setText(discountNote);
-        discountedPriceTv.setText("$"+ discountPrice);
-        originalPriceTv.setText("$"+ originalPrice);
-        if (discountAvailable.equals("true")) {
+        discountedPriceTv.setText("$" + discountPrice);
+        originalPriceTv.setText("$" + originalPrice);
+        if (discountAvailable != null && discountAvailable.equals("true")) {
             // product is on discount
             discountNoteTv.setVisibility(View.VISIBLE);
             discountedPriceTv.setVisibility(View.VISIBLE);
@@ -188,50 +179,35 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
         //show dialog
         bottomSheetDialog.show();
         //edit click
-        editBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bottomSheetDialog.dismiss();
-                //open edit product activity, pass id of product
-                Intent intent = new Intent(context, EditProductActivity.class);
-                intent.putExtra("productId", id);
-                context.startActivity(intent);
+        editBtn.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            //open edit product activity, pass id of product
+            Intent intent = new Intent(context, EditProductActivity.class);
+            intent.putExtra("productId", id);
+            context.startActivity(intent);
 
-            }
         });
+
         //delete click
-        deleteBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bottomSheetDialog.dismiss();
-                //show delete confirm dialog
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Delete")
-                        .setMessage("Are you sure want to delete product "+title + " ?")
-                        .setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //delete
-                                deleteProduct(id); //id is the product id
-                            }
-                        })
-                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                //cancel, dismiss dialog
-                                dialog.dismiss();
-                            }
-                        });
-            }
+        deleteBtn.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            //show delete confirm dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("Delete")
+                    .setMessage("Are you sure want to delete product " + title + " ?")
+                    .setPositiveButton("DELETE", (dialog, which) -> {
+                        //delete
+                        deleteProduct(id); //id is the product id
+                    })
+                    .setNegativeButton("NO", (dialog, which) -> {
+                        //cancel, dismiss dialog
+                        dialog.dismiss();
+                    });
         });
         //back click
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //dismiss bottom sheet
-                bottomSheetDialog.dismiss();
-
-            }
+        backBtn.setOnClickListener(v -> {
+            //dismiss bottom sheet
+            bottomSheetDialog.dismiss();
         });
     }
 
@@ -239,21 +215,15 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
         //delete product using its id
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+        DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
         reference.child(firebaseAuth.getUid()).child("Products").child(id).removeValue()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        //product deleted
-                        Toast.makeText(context, "Product deleted...", Toast.LENGTH_SHORT).show();
-                    }
+                .addOnSuccessListener(unused -> {
+                    //product deleted
+                    Toast.makeText(context, "Product deleted...", Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        //failed deleting product
-                        Toast.makeText(context, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                .addOnFailureListener(e -> {
+                    //failed deleting product
+                    Toast.makeText(context, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
 
     }
@@ -271,5 +241,4 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
 
         return filter;
     }
-
 }
