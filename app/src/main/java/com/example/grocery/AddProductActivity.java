@@ -51,8 +51,8 @@ public class AddProductActivity extends AppCompatActivity {
     //ui views
     private ImageButton backBtn;
     private ImageView productIconTV;
-    private EditText titleEt, descriptionEt, quantityEt;
-    private TextView categoryTv, priceEt, discountedPriceEt, discountedNoteEt;
+    private EditText titleEt, descriptionEt;
+    private TextView categoryTv, priceEt,  quantityEt,discountedPriceEt, discountedNoteEt;
     private SwitchCompat discountSwitch;
     private Button addProductBtn;
 
@@ -80,6 +80,7 @@ public class AddProductActivity extends AppCompatActivity {
         //init ui views
         backBtn = findViewById(R.id.backBtn);
         productIconTV = findViewById(R.id.productIconTV);
+        descriptionEt=findViewById(R.id.descriptionEt);
         titleEt = findViewById(R.id.titleET);
         descriptionEt = findViewById(R.id.descriptionEt);
         categoryTv = findViewById(R.id.categoryTv);
