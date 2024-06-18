@@ -101,6 +101,7 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
             // product is not on discount
             holder.discountedNoteIv.setVisibility(View.GONE);
             holder.discountedPriceTv.setVisibility(View.GONE);
+            holder.originalPriceTv.setPaintFlags(0);
         }
 
         try {

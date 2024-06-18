@@ -82,7 +82,7 @@ public class RegisterUserActivity extends AppCompatActivity implements LocationL
     private ProgressDialog progressDialog;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_user);
 

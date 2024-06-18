@@ -28,6 +28,9 @@
         android:theme="@style/AppTheme.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".activities.ShopDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.EditProductActivity"
             android:exported="false"
             android:label="@string/title_activity_edit_product"
