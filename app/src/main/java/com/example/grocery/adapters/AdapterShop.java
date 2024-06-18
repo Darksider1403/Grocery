@@ -31,7 +31,8 @@ public class AdapterShop extends RecyclerView.Adapter<AdapterShop.HolderShop> {
         // ui views of row_shop.xml
         private ImageView shopIv, onlineIv, nextIv;
         private TextView shopClosedTv, shopNameTv, phoneTv, addressTv;
-        private RatingBar ratingBar;;
+        private RatingBar ratingBar;
+        ;
 
         public HolderShop(@NonNull View itemView) {
             super(itemView);
@@ -85,7 +86,7 @@ public class AdapterShop extends RecyclerView.Adapter<AdapterShop.HolderShop> {
         holder.addressTv.setText(address);
 
         // check if online
-        if(online != null && online.equals("true")) {
+        if (online != null && online.equals("true")) {
             // shop owner is online
             holder.onlineIv.setVisibility(View.VISIBLE);
         } else {

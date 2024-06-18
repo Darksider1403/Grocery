@@ -20,11 +20,11 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.grocery.adapters.AdapterProductSeller;
 import com.example.grocery.Constants;
-import com.example.grocery.models.ModelProduct;
 import com.example.grocery.ProgressDialogFragment;
 import com.example.grocery.R;
+import com.example.grocery.adapters.AdapterProductSeller;
+import com.example.grocery.models.ModelProduct;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -199,7 +199,6 @@ public class MainSellerActivity extends AppCompatActivity {
                     }
                 });
     }
-
 
 
     private void showProductsUI() {

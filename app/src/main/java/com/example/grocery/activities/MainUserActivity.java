@@ -37,7 +37,7 @@ public class MainUserActivity extends AppCompatActivity {
     private TextView nameTv, emailTv, phoneTv, tabShopsTv, tabOrdersTv;
     private RelativeLayout shopsRl, ordersRl;
     private ImageButton logoutBtn, editProfileBtn;
-    private ImageView profileIv ;
+    private ImageView profileIv;
     private RecyclerView shopsRv;
 
     private FirebaseAuth firebaseAuth;
