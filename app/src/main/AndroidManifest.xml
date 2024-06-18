@@ -27,7 +27,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         tools:targetApi="31">
-        <activity android:name=".activities.ShopDetailsActivity" />
+        <activity android:name=".activities.ShopDetailsActivity"
+            android:windowSoftInputMode="stateHidden"/>
+<!--        hide keyboard-->
         <activity android:name=".activities.EditProductActivity" />
         <activity android:name=".activities.AddProductActivity" />
         <activity

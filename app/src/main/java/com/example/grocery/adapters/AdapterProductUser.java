@@ -5,12 +5,16 @@ import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.grocery.FilterProductUser;
@@ -19,6 +23,9 @@ import com.example.grocery.models.ModelProduct;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+
+import p32929.androideasysql_library.Column;
+import p32929.androideasysql_library.EasyDB;
 
 public class AdapterProductUser extends RecyclerView.Adapter<AdapterProductUser.HolderProductUser> implements Filterable {
     private Context context;
@@ -41,11 +48,15 @@ public class AdapterProductUser extends RecyclerView.Adapter<AdapterProductUser.
 
     @Override
     public void onBindViewHolder(@NonNull HolderProductUser holder, int position) {
-        ModelProduct modelProduct = productsList.get(position);
+        final ModelProduct modelProduct = productsList.get(position);
 
         String discountAvailable = modelProduct.getDiscountNoteAvailable();
         String discountNote = modelProduct.getDiscountNote();
         String discountPrice = modelProduct.getDiscountPrice();
+        String productCategory = modelProduct.getProductCategory();
+        String productQuantity = modelProduct.getProductQuantity();
+        String productId= modelProduct.getProductId();
+        String timeStamp = modelProduct.getTimeStamp();
         String productDescription = modelProduct.getProductDescription();
         String productTitle = modelProduct.getProductTitle();
         String originalPrice = modelProduct.getOriginalPrice();
@@ -79,11 +90,131 @@ public class AdapterProductUser extends RecyclerView.Adapter<AdapterProductUser.
 
         holder.addToCartTv.setOnClickListener(v -> {
             // Add to cart
+            showQuantityDialog(modelProduct);
         });
 
         holder.itemView.setOnClickListener(v -> {
             // Show product details
         });
+    }
+private double cost=0;
+private double finalCost=0;
+private int quantity =0;
+    private void showQuantityDialog(ModelProduct modelProduct) {
+        //inflate layout for dialog
+        View view =LayoutInflater.from(context).inflate(R.layout.dialog_quantity,null);
+        //init layout views
+        ImageView productIv = view.findViewById(R.id.productIv);
+        TextView titleTv = view.findViewById(R.id.titleTv);
+        TextView pQuantityTv = view.findViewById(R.id.pQuantity);
+        TextView descriptionTv = view.findViewById(R.id.decriptionTv);
+        TextView discountedNoteTv = view.findViewById(R.id.discountedNoteTv);
+        TextView originalPriceTv = view.findViewById(R.id.originalPriceTv);
+        TextView priceDiscountedTv = view.findViewById(R.id.priceDiscountedTv);
+        TextView finalTv = view.findViewById(R.id. finalTv);
+        ImageButton decrementBtn = view.findViewById(R.id.decrementBtn);
+        TextView quantityTv = view.findViewById(R.id.quantityTv);
+        ImageButton incrementBtn = view.findViewById(R.id.incrementBtn);
+        Button continueBtn = view.findViewById(R.id.continueBtn);
+        //  get data from model
+        String productId = modelProduct.getProductId();
+        String title = modelProduct.getProductTitle();
+        String productQuantity = modelProduct.getProductQuantity();
+        String description = modelProduct.getProductDescription();
+        String discountNote = modelProduct.getDiscountNote();
+        String image = modelProduct.getProductIcon();
+        String price;
+        if(modelProduct.getDiscountNoteAvailable().equals("true")){
+            price=modelProduct.getDiscountPrice();
+            discountedNoteTv.setVisibility(View.VISIBLE);
+            originalPriceTv.setPaintFlags(originalPriceTv.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+        }else{
+            //not discount
+            discountedNoteTv.setVisibility(View.GONE);
+            priceDiscountedTv.setVisibility(View.GONE);
+            price=modelProduct.getOriginalPrice();
+        }
+    cost =Double.parseDouble(price.replaceAll("$",""));
+        finalCost=Double.parseDouble(price.replaceAll("$",""));
+        quantity=1;
+        //Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(view);
+        //set data
+        try {
+            Picasso.get().load(image). placeholder (R.drawable.local_grocery_store_primary).into (productIv);
+        }
+
+        catch (Exception e) {
+            productIv.setImageResource(R.drawable.local_grocery_store_primary);
+        }
+        titleTv.setText(""+title);
+        pQuantityTv.setText(""+productQuantity);
+        descriptionTv.setText(""+description);
+        discountedNoteTv.setText(""+discountNote);
+        quantityTv.setText(""+quantity);
+        originalPriceTv.setText("$"+modelProduct.getOriginalPrice());
+        priceDiscountedTv.setText("$"+modelProduct.getDiscountPrice());
+        finalTv.setText("$"+finalCost);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        //Incre quantity
+        incrementBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finalCost = finalCost+cost;
+                quantity++;
+                finalTv.setText("$"+finalCost);
+                quantityTv.setText(""+quantity);
+            }
+        });
+        //decre quantity
+        decrementBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(quantity>1){
+                    finalCost = finalCost-cost;
+                    quantity--;
+                    finalTv.setText("$"+finalCost);
+                    quantityTv.setText(""+quantity);
+                }
+            }
+        });
+        continueBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String title = titleTv.getText().toString().trim();
+                String quantity = quantityTv.getText().toString().trim();
+                String priceEach = originalPriceTv.getText().toString().trim().replace("$","");
+                String price  = finalTv.getText().toString().trim().replace("$","");
+             //add to db(SqlLite)
+             addToCart(productId,title,priceEach,price,quantity);
+             dialog.dismiss();
+            }
+        });
+    }
+    private int itemId=1;
+    private void addToCart(String productId, String title, String priceEach, String price, String quantity) {
+    itemId++;
+        EasyDB easyDB = EasyDB.init(context,"ITEMS_DB").setTableName("ITEMS_TABLE")
+                .addColumn(new Column("Item_id",new String[]{"Text","unique"}))
+                .addColumn(new Column("Item_PID",new String[]{"Text","not null"}))
+                .addColumn(new Column("Item_Name",new String[]{"Text","not null"}))
+                .addColumn(new Column("Item_Price_Each",new String[]{"Text","not null"}))
+                .addColumn(new Column("Item_Price",new String[]{"Text","not null"}))
+                .addColumn(new Column("Item_Quantity",new String[]{"Text","not null"}))
+                .doneTableColumn();
+        Boolean b= easyDB.addData("Item_id",itemId)
+                .addData("Item_PID",productId)
+                .addData("Item_Name",title)
+                .addData("Item_Price_Each",priceEach)
+                .addData("Item_Price",price)
+                .addData("Item_Quantity",quantity)
+                .doneDataAdding();
+        Toast.makeText(context,"Adding to Cart....",Toast.LENGTH_SHORT).show();
     }
 
     @Override

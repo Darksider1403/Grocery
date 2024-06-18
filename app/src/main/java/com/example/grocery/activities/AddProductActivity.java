@@ -45,8 +45,8 @@ public class AddProductActivity extends AppCompatActivity {
     //ui views
     private ImageButton backBtn;
     private ImageView productIconTV;
-    private EditText titleEt, descriptionEt, priceEt, quantityEt;
-    private TextView discountedPriceEt, discountedNoteEt, categoryTv;
+    private EditText titleEt, descriptionEt, priceEt, quantityEt,discountedPriceEt, discountedNoteEt;
+    private TextView  categoryTv;
     private SwitchCompat discountSwitch;
     private Button addProductBtn;
 
@@ -111,7 +111,7 @@ public class AddProductActivity extends AppCompatActivity {
 
         firebaseAuth = FirebaseAuth.getInstance();
         progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Please Wait");
+//        progressDialog.setTitle("Please Wait");
         progressDialog.setCanceledOnTouchOutside(false);
 
         backBtn.setOnClickListener(v -> finish());
@@ -159,6 +159,7 @@ public class AddProductActivity extends AppCompatActivity {
         if (discountAvailable) {
             discountPrice = discountedPriceEt.getText().toString().trim();
             discountNote = discountedNoteEt.getText().toString().trim();
+
             if (TextUtils.isEmpty(discountPrice)) {
                 Toast.makeText(this, "Discount Price is required", Toast.LENGTH_SHORT).show();
                 return;
