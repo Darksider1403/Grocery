@@ -56,7 +56,7 @@ public class MainSellerActivity extends AppCompatActivity {
 
         nameTv = findViewById(R.id.nameTv);
         shopNameTV = findViewById(R.id.shopNameTV);
-        emailTV = findViewById(R.id.emailTV);
+        emailTV = findViewById(R.id.emailTv);
         tabProductsTv = findViewById(R.id.tabProductsTv);
         tabOrdersTv = findViewById(R.id.tabOrdersTv);
 

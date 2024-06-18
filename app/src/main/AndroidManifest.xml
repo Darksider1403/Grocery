@@ -27,19 +27,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar"
         tools:targetApi="31">
-        <activity
-            android:name=".activities.ShopDetailsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.EditProductActivity"
-            android:exported="false"
-            android:label="@string/title_activity_edit_product"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".activities.AddProductActivity"
-            android:exported="false"
-            android:label="@string/title_activity_add_product"
-            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".activities.ShopDetailsActivity" />
+        <activity android:name=".activities.EditProductActivity" />
+        <activity android:name=".activities.AddProductActivity" />
         <activity
             android:name=".activities.ProfileEditSellerActivity"
             android:enableOnBackInvokedCallback="true"
