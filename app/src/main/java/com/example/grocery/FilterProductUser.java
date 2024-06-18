@@ -48,7 +48,8 @@ public class FilterProductUser extends Filter {
             results.count = filterList.size();
             results.values = filterList;
         }
-        return null;
+
+        return results;
     }
 
     @SuppressLint("NotifyDataSetChanged")

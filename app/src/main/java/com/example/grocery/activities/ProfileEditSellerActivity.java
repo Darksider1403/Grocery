@@ -398,6 +398,10 @@ public class ProfileEditSellerActivity extends AppCompatActivity implements Loca
         contentValues.put(MediaStore.Images.Media.DESCRIPTION, "Image Description");
 
         image_uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+        if (image_uri == null) {
+            Toast.makeText(this, "Failed to create image URI", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri);
@@ -513,18 +517,20 @@ public class ProfileEditSellerActivity extends AppCompatActivity implements Loca
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        //handle image pick result
-        if (resultCode == RESULT_OK) {
-            if (resultCode == IMAGE_PICK_GALLERY_CODE) {
-                //picked from gallery
+        // Handle image pick result
+        if (resultCode == RESULT_OK) {  // <-- Check result code only once
+
+            if (requestCode == IMAGE_PICK_GALLERY_CODE) {
+                // Picked from gallery
                 image_uri = data.getData();
-                //set to imageview
                 profileIv.setImageURI(image_uri);
-            } else if (resultCode == IMAGE_PICK_CAMERA_CODE) {
+
+            } else if (requestCode == IMAGE_PICK_CAMERA_CODE) {
+                // Picked from camera (image_uri should already be set)
                 profileIv.setImageURI(image_uri);
             }
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 }
