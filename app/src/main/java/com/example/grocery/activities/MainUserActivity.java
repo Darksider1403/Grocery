@@ -18,7 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.grocery.ProgressDialogFragment;
 import com.example.grocery.R;
+import com.example.grocery.adapters.AdapterOrderUser;
 import com.example.grocery.adapters.AdapterShop;
+import com.example.grocery.models.ModelOrderUser;
 import com.example.grocery.models.ModelShop;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -38,10 +40,12 @@ public class MainUserActivity extends AppCompatActivity {
     private RelativeLayout shopsRl, ordersRl;
     private ImageButton logoutBtn, editProfileBtn;
     private ImageView profileIv;
-    private RecyclerView shopsRv;
+    private RecyclerView shopsRv,ordersRv;
 
     private FirebaseAuth firebaseAuth;
     private ArrayList<ModelShop> shopsList;
+    private ArrayList<ModelOrderUser>ordersList;
+    private AdapterOrderUser adapterOrderUser;
     private AdapterShop adapterShop;
 
     @SuppressLint("MissingInflatedId")
@@ -60,6 +64,7 @@ public class MainUserActivity extends AppCompatActivity {
         tabOrdersTv = findViewById(R.id.tabOrdersTv);
         shopsRl = findViewById(R.id.shopsRl);
         ordersRl = findViewById(R.id.ordersRl);
+        ordersRv=findViewById(R.id.ordersRv);
 
         shopsRv = findViewById(R.id.shopsRv);
 
@@ -170,6 +175,7 @@ public class MainUserActivity extends AppCompatActivity {
 
                             // load only those shops that are in the city of user
                             loadShops(city);
+                            loadOrders();
                         }
                     }
 
@@ -179,7 +185,53 @@ public class MainUserActivity extends AppCompatActivity {
                 });
     }
 
-    private void loadShops(String myCity) {
+    private void loadOrders() {
+
+//init order list
+        ordersList = new ArrayList<>();
+// get orders
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference( "Users");
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ordersList.clear();
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    String uid = "" + ds.getRef().getKey();
+                    DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users").child(uid).child("Orders");
+                    ref.orderByChild("orderBy").equalTo(firebaseAuth.getUid())
+                            .addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    if(dataSnapshot.exists()){
+                                        for (DataSnapshot ds:dataSnapshot.getChildren()){
+                                            ModelOrderUser modelOrderUser = ds.getValue(ModelOrderUser.class);
+                                            ordersList.add(modelOrderUser);
+                                        }
+                                        adapterOrderUser = new AdapterOrderUser(MainUserActivity.this,ordersList);
+                                        ordersRv.setAdapter(adapterOrderUser);
+                                    }
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+            }
+
+
+
+
+            private void loadShops(String myCity) {
         // init lít
         shopsList = new ArrayList<>();
 
