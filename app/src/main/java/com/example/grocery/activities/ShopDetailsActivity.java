@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.grocery.Constants;
@@ -58,7 +60,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
     private RecyclerView productsRv;
     private String shopUid;
     private FirebaseAuth firebaseAuth;
-    private String myLatitude, myLongitude,myPhone;
+    private String myLatitude, myLongitude, myPhone;
     private String shopLatitude, shopLongitude, shopName, shopEmail, shopAddress, shopPhone;
     public String deliveryFee;
     private ArrayList<ModelProduct> productsList;
@@ -93,6 +95,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
         backBtn = findViewById(R.id.backBtn);
         searchProductEt = findViewById(R.id.searchProductEt);
         productsRv = findViewById(R.id.productsRv);
+        productsRv.setLayoutManager(new LinearLayoutManager(this));
 
         firebaseAuth = FirebaseAuth.getInstance();
         loadMyInfo();
@@ -162,6 +165,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
                     .show();
         });
     }
+
     private void showProgressDialog(String message) {
         ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
     }
@@ -238,7 +242,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
             allTotalPrice = allTotalPrice + Double.parseDouble(cost);
 
-            ModelCartItem cartItem = new ModelCartItem(
+            ModelCartItem modelCartItem = new ModelCartItem(
                     "" + id,
                     "" + pid,
                     "" + name,
@@ -246,7 +250,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
                     "" + cost,
                     "" + quantity);
 
-            cartItemList.add(cartItem);
+            cartItemList.add(modelCartItem);
         }
 
         // setup adapter
@@ -261,76 +265,75 @@ public class ShopDetailsActivity extends AppCompatActivity {
         // show dialog
         AlertDialog dialog = builder.create();
         dialog.show();
-        checkoutBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(myLatitude.equals("")|| myLatitude.equals("null")||myLongitude.equals("")||myLongitude.equals("null")){
-                    Toast.makeText(ShopDetailsActivity.this,"Please enter your address before order",Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if(myPhone.equals("")|| myPhone.equals("null")||myPhone.equals("")||myPhone.equals("null")){
-                    Toast.makeText(ShopDetailsActivity.this,"Please enter your phone before order",Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                if(cartItemList.size()==0){
-                    Toast.makeText(ShopDetailsActivity.this,"No Item in cart",Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                submitOrder();
+
+        // reset total price on dialog dismiss
+        dialog.setOnCancelListener(dialogInterface -> allTotalPrice = 0.00);
+
+        // place order
+        checkoutBtn.setOnClickListener(v -> {
+            Log.d("DEBUG", "myLatitude: " + myLatitude);
+            Log.d("DEBUG", "myLongitude: " + myLongitude);
+            Log.d("DEBUG", "myPhone: " + myPhone);
+            if (myLatitude.equals("") || myLatitude.equals("null") || myLongitude.equals("") || myLongitude.equals("null")) {
+                Toast.makeText(ShopDetailsActivity.this, "Please enter your address before order", Toast.LENGTH_SHORT).show();
+                return;
             }
-        });
-        // reset total price on dialog
-        dialog.setOnCancelListener(dialog1 -> {
-            allTotalPrice = 0.00;
+            if (myPhone.equals("") || myPhone.equals("null") || myPhone.equals("") || myPhone.equals("null")) {
+                Toast.makeText(ShopDetailsActivity.this, "Please enter your phone before order", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (cartItemList.size() == 0) {
+                Toast.makeText(ShopDetailsActivity.this, "No Item in cart", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            submitOrder();
         });
     }
 
     private void submitOrder() {
-            showProgressDialog("Placing Order..");
-            progressDialog.show();
+        showProgressDialog("Placing Order...");
+        progressDialog.show();
         //for order id and order time
-        String timestamp = ""+System.currentTimeMillis();
-        String cost = allTotalPriceTv.getText().toString().trim().replace("$",""); //remove $ if contains
-//setup oder data
+        String timestamp = "" + System.currentTimeMillis();
+        String cost = allTotalPriceTv.getText().toString().trim().replace("$", ""); //remove $ if contains
+        //setup oder data
         HashMap<String, String> hashMap = new HashMap<>();
-        hashMap.put("orderId", ""+timestamp);
-        hashMap.put("orderTime", ""+timestamp);
-        hashMap.put("orderStatus", "In Progress"); //In Progress/Completed/Cancelled
-        hashMap.put("orderCost", ""+cost);
-        hashMap.put("orderBy", ""+firebaseAuth.getUid());
-        hashMap.put("orderTo", ""+shopUid);
+        hashMap.put("orderId", "" + timestamp);
+        hashMap.put("orderTime", "" + timestamp);
+        hashMap.put("orderStatus", "In Progress"); // In Progress/Completed/Cancelled
+        hashMap.put("orderCost", "" + cost);
+        hashMap.put("orderBy", "" + firebaseAuth.getUid());
+        hashMap.put("orderTo", "" + shopUid);
+        hashMap.put("latitude", "" + myLatitude);
+        hashMap.put("longitude", "" + myLongitude);
 
         //add To DB
         final DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users").child(shopUid).child("Orders");
         ref.child(timestamp).setValue(hashMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-//order info added now add order items
-                            for (int i=0; i<cartItemList.size(); i++) {
-                                String pId = cartItemList.get(i).getpId();
-                                String id = cartItemList.get(i).getId();
-                                String cost = cartItemList.get(i).getCost();
-                                String name = cartItemList.get(i).getName();
-                                String price = cartItemList.get(i).getPrice();
-                                String quantity = cartItemList.get(i).getQuantity();
-                                HashMap<String, String> hashMap1 = new HashMap<>();
-                                hashMap1.put("pId", pId);
-                                hashMap1.put("name", name);
-                                hashMap1.put("cost", cost);
-                                hashMap1.put("price", price);
-                                hashMap1.put("quantity", quantity);
-                                ref.child(timestamp).child("Items").child(pId).setValue(hashMap1);
-                            }
-                            hideProgressDialog();
-                            Toast.makeText(ShopDetailsActivity.this,"Order placed success",Toast.LENGTH_SHORT).show();
+                .addOnSuccessListener(unused -> {
+                //order info added now add order items
+                    for (int i = 0; i < cartItemList.size(); i++) {
+                        String pId = cartItemList.get(i).getpId();
+                        String id = cartItemList.get(i).getId();
+                        String cost1 = cartItemList.get(i).getCost();
+                        String name = cartItemList.get(i).getName();
+                        String price = cartItemList.get(i).getPrice();
+                        String quantity = cartItemList.get(i).getQuantity();
+
+                        HashMap<String, String> hashMap1 = new HashMap<>();
+                        hashMap1.put("pId", pId);
+                        hashMap1.put("name", name);
+                        hashMap1.put("cost", cost1);
+                        hashMap1.put("price", price);
+                        hashMap1.put("quantity", quantity);
+
+                        ref.child(timestamp).child("Items").child(pId).setValue(hashMap1);
                     }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        hideProgressDialog();
-                        Toast.makeText(ShopDetailsActivity.this,""+e.getMessage(),Toast.LENGTH_SHORT).show();
-                    }
+                    hideProgressDialog();
+                    Toast.makeText(ShopDetailsActivity.this, "Order placed success", Toast.LENGTH_SHORT).show();
+                }).addOnFailureListener(e -> {
+                    hideProgressDialog();
+                    Toast.makeText(ShopDetailsActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -471,15 +474,15 @@ public class ShopDetailsActivity extends AppCompatActivity {
                             // get user data
                             String name = "" + ds.child("name").getValue();
                             String email = "" + ds.child("email").getValue();
-                             myPhone = "" + ds.child("phone").getValue();
+                            myPhone = "" + ds.child("phone").getValue();
                             String profileImage = "" + ds.child("profileImage").getValue();
                             String accountType = "" + ds.child("accountType").getValue();
                             String city = "" + ds.child("city").getValue();
                             myLatitude = "" + ds.child("latitude").getValue();
-                            myLongitude = "" + ds.child("longtitude").getValue();
-
+                            myLongitude = "" + ds.child("longitude").getValue();
 
                             // set user data
+
                         }
                     }
 
