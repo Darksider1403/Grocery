@@ -29,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSeller.HolderProductSeller> implements Filterable {
     private Context context;
@@ -217,7 +218,7 @@ public class AdapterProductSeller extends RecyclerView.Adapter<AdapterProductSel
 
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
-        reference.child(firebaseAuth.getUid()).child("Products").child(id).removeValue()
+        reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products").child(id).removeValue()
                 .addOnSuccessListener(unused -> {
                     //product deleted
                     Toast.makeText(context, "Product deleted...", Toast.LENGTH_SHORT).show();

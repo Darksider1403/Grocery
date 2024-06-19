@@ -1,13 +1,16 @@
 package com.example.grocery.activities;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -21,7 +24,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.grocery.Constants;
 import com.example.grocery.R;
+import com.example.grocery.adapters.AdapterCartItem;
 import com.example.grocery.adapters.AdapterProductUser;
+import com.example.grocery.models.ModelCartItem;
 import com.example.grocery.models.ModelProduct;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -32,6 +37,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+
+import p32929.androideasysql_library.Column;
+import p32929.androideasysql_library.EasyDB;
 
 public class ShopDetailsActivity extends AppCompatActivity {
 //Declare ui view
@@ -45,8 +53,13 @@ public class ShopDetailsActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private String myLatitude, myLongitude;
     private String shopLatitude, shopLongitude, shopName, shopEmail, shopAddress, shopPhone;
+    public String deliveryFee;
     private ArrayList<ModelProduct> productsList;
     private AdapterProductUser adapterProductUser;
+
+    // cart
+    private ArrayList<ModelCartItem> cartItemList;
+    private AdapterCartItem adapterCartItem;
 
     @SuppressLint("WrongViewCast")
     @Override
@@ -78,6 +91,12 @@ public class ShopDetailsActivity extends AppCompatActivity {
         loadShopDetails();
         loadShopProducts();
 
+        // each shop have it own products and orders so if user add items to cart
+        // and go back and open cart in different shop
+        // then cart should be different
+        // so delete cart data whenever user open this activity
+        deleteCartData();
+
         if (shopIv == null || shopNameTv == null || phoneTv == null || emailTv == null || openCloseTv == null ||
                 deliveryFeeTv == null || addressTv == null || callBtn == null || mapBtn == null || cartBtn == null || backBtn == null) {
             System.out.println("One of the views is null");
@@ -95,22 +114,18 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
             }
 
             @Override
             public void afterTextChanged(Editable s) {
+            }
+        });
 
-            }
-        });
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        backBtn.setOnClickListener(v -> finish());
+
         cartBtn.setOnClickListener(v -> {
-
+            // show cart dialog
+            showCartDialog();
         });
         callBtn.setOnClickListener(v -> diaPhone());
         mapBtn.setOnClickListener(v -> openMap());
@@ -134,15 +149,144 @@ public class ShopDetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void openMap() {
-        String address = "https://maps.google.com.maps?sadd=" + myLatitude + "," + myLongitude + "&daddr=" + shopLatitude + "," + shopLongitude;
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(address));
-        startActivity(intent);
+    private void deleteCartData() {
+        EasyDB easyDB = EasyDB.init(this, "ITEMS_DB")
+                .setTableName("ITEMS_TABLE")
+                .addColumn(new Column("Item_id", new String[]{"Text", "unique"}))
+                .addColumn(new Column("Item_PID", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Name", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Price_Each", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Price", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Quantity", new String[]{"Text", "not null"}))
+                .doneTableColumn();
+
+        easyDB.deleteAllDataFromTable();    // delete all records from cart
     }
 
+    public double allTotalPrice = 0.00;
+    // need to access these views in adapter
+    public TextView sTotalTv, dFeeTv, allTotalPriceTv;
+
+    @SuppressLint({"SetTextI18n", "DefaultLocale"})
+    private void showCartDialog() {
+        // init list
+        cartItemList = new ArrayList<>();
+
+        // inflate cart layout
+        View view = LayoutInflater.from(this).inflate(R.layout.diaglog_cart, null);
+
+        // init views
+        TextView shopNameTv = view.findViewById(R.id.shopNameTv);
+        RecyclerView cartItemsRv = view.findViewById(R.id.cartItemsRv);
+        sTotalTv = view.findViewById(R.id.sTotalTv);
+        dFeeTv = view.findViewById(R.id.dFeeTv);
+        allTotalPriceTv = view.findViewById(R.id.totalTv);
+        Button checkoutBtn = view.findViewById(R.id.checkoutBtn);
+
+        // dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        //set view to dialog
+        builder.setView(view);
+
+        shopNameTv.setText(shopName);
+
+        EasyDB easyDB = EasyDB.init(this, "ITEMS_DB")
+                .setTableName("ITEMS_TABLE")
+                .addColumn(new Column("Item_id", new String[]{"Text", "unique"}))
+                .addColumn(new Column("Item_PID", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Name", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Price_Each", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Price", new String[]{"Text", "not null"}))
+                .addColumn(new Column("Item_Quantity", new String[]{"Text", "not null"}))
+                .doneTableColumn();
+
+        // get all records  from db
+        Cursor res = easyDB.getAllData();
+
+        while (res.moveToNext()) {
+            String id = res.getString(1);
+            String pid = res.getString(2);
+            String name = res.getString(3);
+            String price = res.getString(4);
+            String cost = res.getString(5);
+            String quantity = res.getString(6);
+
+            allTotalPrice = allTotalPrice + Double.parseDouble(cost);
+
+            ModelCartItem cartItem = new ModelCartItem(
+                    "" + id,
+                    "" + pid,
+                    "" + name,
+                    "" + price,
+                    "" + cost,
+                    "" + quantity);
+
+            cartItemList.add(cartItem);
+        }
+
+        // setup adapter
+        adapterCartItem = new AdapterCartItem(this, cartItemList);
+        // set to recycle view
+        cartItemsRv.setAdapter(adapterCartItem);
+
+        dFeeTv.setText("$" + deliveryFee);
+        sTotalTv.setText("$" + String.format("%.2f", allTotalPrice));
+        allTotalPriceTv.setText("$" + (allTotalPrice + Double.parseDouble(deliveryFee.replace("$", ""))));
+
+        // show dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // reset total price on dialog
+        dialog.setOnCancelListener(dialog1 -> {
+            allTotalPrice = 0.00;
+        });
+    }
+
+    @SuppressLint("QueryPermissionsNeeded")
+    private void openMap() {
+        // Check if latitude and longitude values are not null or empty
+        if (myLatitude == null || myLongitude == null || shopLatitude == null || shopLongitude == null ||
+                myLatitude.isEmpty() || myLongitude.isEmpty() || shopLatitude.isEmpty() || shopLongitude.isEmpty()) {
+            Toast.makeText(this, "Location coordinates are not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String address = "https://www.google.com/maps/dir/?api=1&origin=" + myLatitude + "," + myLongitude + "&destination=" + shopLatitude + "," + shopLongitude;
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(address));
+        intent.setPackage("com.google.android.apps.maps");
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            // Try opening without specifying the package
+            intent.setPackage(null);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Google Maps is not installed", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @SuppressLint("QueryPermissionsNeeded")
     private void diaPhone() {
-        startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("Tel:" + Uri.encode(shopPhone))));
-        Toast.makeText(this, "" + shopPhone, Toast.LENGTH_SHORT).show();
+        if (shopPhone == null || shopPhone.isEmpty()) {
+            Toast.makeText(this, "Phone number is invalid", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            Intent dialIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + Uri.encode(shopPhone)));
+            if (dialIntent.resolveActivity(getPackageManager()) != null) {
+                startActivity(dialIntent);
+            } else {
+                Toast.makeText(this, "No dialer app found", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
     }
 
     private void loadShopProducts() {
@@ -183,9 +327,23 @@ public class ShopDetailsActivity extends AppCompatActivity {
                 shopAddress = "" + snapshot.child("address").getValue();
                 shopLatitude = "" + snapshot.child("latitude").getValue();
                 shopLongitude = "" + snapshot.child("longtitude").getValue();
-                String deliveryFee = "" + snapshot.child("deliveryFee").getValue();
+                deliveryFee = "" + snapshot.child("deliveryFee").getValue();
                 String profileImage = "" + snapshot.child("profileImage").getValue();
                 String shopOpen = "" + snapshot.child("shopOpen").getValue();
+
+                // Ensure these values are not null
+                if (myLatitude == null) {
+                    myLatitude = ""; // or set to some default value
+                }
+                if (myLongitude == null) {
+                    myLongitude = ""; // or set to some default value
+                }
+                if (shopLatitude == null) {
+                    shopLatitude = ""; // or set to some default value
+                }
+                if (shopLongitude == null) {
+                    shopLongitude = ""; // or set to some default value
+                }
 
 //               set data
                 shopNameTv.setText(shopName);

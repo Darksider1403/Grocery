@@ -74,7 +74,7 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
 
-    implementation("com.github.p32929:AndroidEasySQL-Library:1.4.1")
+    implementation(libs.androideasysql.library)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
