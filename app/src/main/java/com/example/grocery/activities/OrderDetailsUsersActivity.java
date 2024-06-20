@@ -73,14 +73,12 @@ public class OrderDetailsUsersActivity extends AppCompatActivity {
         backBtn.setOnClickListener(v -> {
             finish();
         });
-        writeReviewBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent1 = new Intent(OrderDetailsUsersActivity.this,WriteReviewActivity.class);
-                intent1.putExtra("shopUid",orderTo);
-                startActivity(intent);
-            }
+        writeReviewBtn.setOnClickListener(v -> {
+            Intent intent1 = new Intent(OrderDetailsUsersActivity.this, WriteReviewActivity.class);
+            intent1.putExtra("shopUid", orderTo);
+            startActivity(intent1);
         });
+
     }
 
     private void loadOrderItems() {

@@ -2,6 +2,7 @@ package com.example.grocery.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -33,13 +34,14 @@ import java.util.HashMap;
 
 public class WriteReviewActivity extends AppCompatActivity {
     private  String shopUid;
+    private static final String TAG = "WriteReviewActivity";
     private ImageButton backBtn;
-    ImageView profileIv;
-    TextView shopNameTv,labelTv;
-    RatingBar ratingBar;
-    EditText reviewEt;
-    FloatingActionButton submitBtn;
-    FirebaseAuth firebaseAuth;
+    private ImageView profileIv;
+    private TextView shopNameTv,labelTv;
+    private RatingBar ratingBar;
+    private EditText reviewEt;
+    private FloatingActionButton submitBtn;
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,14 @@ public class WriteReviewActivity extends AppCompatActivity {
         reviewEt = findViewById(R.id.reviewEt);
         submitBtn = findViewById(R.id.submitBtn);
         firebaseAuth = FirebaseAuth.getInstance();
+        shopUid = getIntent().getStringExtra("shopUid");
+        if (shopUid == null) {
+            Toast.makeText(this, "No shop ID provided.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        Log.d(TAG, "Shop UID: " + shopUid);
         //Load previous review of the user to this shop
         loadMyReview();
         //Load shop info
@@ -65,7 +75,7 @@ public class WriteReviewActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
-        shopUid=getIntent().getStringExtra("shopUid");
+
         submitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
