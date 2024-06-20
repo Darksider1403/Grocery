@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,8 +33,10 @@ import com.example.grocery.ProgressDialogFragment;
 import com.example.grocery.R;
 import com.example.grocery.adapters.AdapterCartItem;
 import com.example.grocery.adapters.AdapterProductUser;
+import com.example.grocery.adapters.AdapterReview;
 import com.example.grocery.models.ModelCartItem;
 import com.example.grocery.models.ModelProduct;
+import com.example.grocery.models.ModelReview;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,9 +58,10 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
     private ImageView shopIv;
     private TextView shopNameTv, phoneTv, emailTv, openCloseTv, deliveryFeeTv, addressTv, filteredProductsTv, cartCountTv;
-    private ImageButton callBtn, mapBtn, cartBtn, backBtn, filterProductBtn;
+    private ImageButton callBtn, mapBtn, cartBtn, backBtn, filterProductBtn, reviewBtn;
     private EditText searchProductEt;
     private RecyclerView productsRv;
+    private RatingBar ratingBar;
     private String shopUid;
     private FirebaseAuth firebaseAuth;
     private String myLatitude, myLongitude, myPhone;
@@ -98,12 +102,14 @@ public class ShopDetailsActivity extends AppCompatActivity {
         productsRv = findViewById(R.id.productsRv);
         cartCountTv = findViewById(R.id.cartCountTv);
         productsRv.setLayoutManager(new LinearLayoutManager(this));
+        reviewBtn = findViewById(R.id.reviewBtn);
+        ratingBar = findViewById(R.id.ratingBar);
 
         firebaseAuth = FirebaseAuth.getInstance();
         loadMyInfo();
         loadShopDetails();
         loadShopProducts();
-
+        loadReviews(); //avg rating, set on ratingbar
         //Progress Dialog
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Please Wait");
@@ -177,6 +183,46 @@ public class ShopDetailsActivity extends AppCompatActivity {
                     })
                     .show();
         });
+
+        //handle reviewBtn click, open reivews activity
+        reviewBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                //pass shop uid to show its reviews
+                Intent intent = new Intent(ShopDetailsActivity.this, ShopReviewsActivity.class);
+                intent.putExtra("shopUid", shopUid);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private float ratingSum = 0;
+    private void loadReviews() {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
+        ref.child(shopUid). child("Ratings")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        //clear list before adding data into it
+                        ratingSum = 0;
+                        for(DataSnapshot ds: snapshot.getChildren()){
+                            float rating = Float.parseFloat(""+ds.child("rating").getValue());
+                            ratingSum = ratingSum +rating; //for avg rating, add(addtition of) all ratings, later will divide it by number of reviews
+
+
+                        }
+
+                        long numberOfReviews = snapshot.getChildrenCount();
+                        float avgRating = ratingSum/numberOfReviews;
+
+                        ratingBar.setRating(avgRating);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
     }
 
     private void showProgressDialog(String message) {
