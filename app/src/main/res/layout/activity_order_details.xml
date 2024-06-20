@@ -6,6 +6,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".activities.OrderDetailsUsersActivity">
+<!--    Addinng button to write review in order detal-->
+
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -28,6 +30,13 @@
             android:textColor="@color/colorWhite"
             android:textSize="20sp"
             android:textStyle="bold" />
+        <ImageButton
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:id="@+id/writeReviewBtn"
+            android:layout_alignParentEnd="true"
+            android:background="@null"
+            android:src="@drawable/baseline_rate_white"/>
 
     </RelativeLayout>
 
