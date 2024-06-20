@@ -40,6 +40,7 @@
             android:name=".activities.ProfileEditUserActivity"
             android:enableOnBackInvokedCallback="true"
             tools:targetApi="tiramisu" />
+        <activity android:name=".activities.OrderDetailsUsersActivity" />
         <activity android:name=".activities.RegisterUserActivity" />
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.RegisterSellerActivity" />

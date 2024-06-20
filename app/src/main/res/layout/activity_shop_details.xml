@@ -8,24 +8,21 @@
 
     <!-- Shop details -->
     <RelativeLayout
+        android:id="@+id/shopRl"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:id="@+id/shopRl">
+        android:layout_height="200dp">
+
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
             android:id="@+id/shopIv"
-            android:scaleType="centerCrop"
-            android:src="@color/colorGray02"/>
-        <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="#79000000"/>
+            android:scaleType="centerCrop"
+            android:src="@color/colorGray02" />
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
             android:padding="10dp">
 
             <TextView
@@ -83,10 +80,10 @@
                 android:id="@+id/addressTv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Address"
                 android:layout_below="@+id/emailTv"
                 android:layout_marginStart="3dp"
                 android:layout_marginTop="10dp"
+                android:text="Address"
                 android:textColor="@color/colorWhite" />
 
             <LinearLayout
@@ -95,43 +92,54 @@
                 android:layout_alignParentBottom="true"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal">
+
                 <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:id="@+id/callBtn"
-                    android:src="@drawable/baseline_call_white"
-                    android:background="@null" />
-                <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:src="@drawable/baseline_call_white" />
+
+                <ImageButton
                     android:id="@+id/mapBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
-                    android:src="@drawable/baseline_map_black"
-                    android:background="@null" />
+                    android:background="@null"
+                    android:src="@drawable/baseline_map_black" />
             </LinearLayout>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="#79000000" />
         </RelativeLayout>
     </RelativeLayout>
 
     <!-- ToolBar -->
     <RelativeLayout
+        android:id="@+id/toolbarRl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/toolbarRl"
         android:background="@drawable/shape_rect01"
         android:padding="10dp">
+
         <ImageButton
-            android:layout_width="30dp"
-            android:layout_height="30dp"
             android:id="@+id/cartBtn"
-            android:layout_alignParentEnd="true"
-            android:background="@null"
-            android:src="@drawable/add_shopping_cart_white"/>
-        <ImageButton
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:id="@+id/backBtn"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="8dp"
             android:background="@null"
-            android:src="@drawable/baseline_back_white"/>
+            android:src="@drawable/add_shopping_cart_white" />
+
+        <ImageButton
+            android:id="@+id/backBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@null"
+            android:src="@drawable/baseline_back_white" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -140,20 +148,33 @@
             android:text="Shop Details"
             android:textColor="@color/colorWhite"
             android:textSize="20sp" />
+
+        <!--cart item count badge-->
+        <TextView
+            android:id="@+id/cartCountTv"
+            android:text="10"
+            android:textColor="@color/colorWhite"
+            android:textSize="8sp"
+            android:gravity="center"
+            android:background="@drawable/shape_circle_03"
+            android:layout_alignParentEnd="true"
+            android:layout_width="20dp"
+            android:layout_height="20dp"/>
+
     </RelativeLayout>
 
     <!-- Products -->
     <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:id="@+id/productsRl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/shopRl">
         <!-- Search -->
         <EditText
+            android:id="@+id/searchProductEt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:id="@+id/searchProductEt"
             android:layout_toStartOf="@+id/filterProductBtn"
             android:background="@drawable/shape_rect02"
             android:drawableStart="@drawable/search_grey"
@@ -162,32 +183,32 @@
             android:padding="10dp" />
         <!-- Filter product -->
         <ImageButton
+            android:id="@+id/filterProductBtn"
             android:layout_width="45dp"
             android:layout_height="45dp"
-            android:id="@+id/filterProductBtn"
             android:layout_alignParentEnd="true"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="5dp"
             android:background="@null"
             android:scaleType="fitXY"
-            android:src="@drawable/filter_gray"/>
+            android:src="@drawable/filter_gray" />
         <!-- Show filtered products -->
         <TextView
+            android:id="@+id/filteredProductsTv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/searchProductEt"
             android:layout_marginStart="5dp"
             android:layout_marginBottom="5dp"
             android:text="Showing all"
-            android:textColor="@color/colorBlack"
-            android:id="@+id/filteredProductsTv"/>
+            android:textColor="@color/colorBlack" />
         <!-- RecyclerView to show products -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/productsRv"
-            android:layout_below="@+id/filteredProductsTv"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_below="@+id/filteredProductsTv"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/row_product_seller"/>
+            tools:listitem="@layout/row_product_seller" />
     </RelativeLayout>
 </RelativeLayout>

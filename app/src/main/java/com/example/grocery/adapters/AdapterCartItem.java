@@ -103,6 +103,9 @@ public class AdapterCartItem extends RecyclerView.Adapter<AdapterCartItem.Holder
             ((ShopDetailsActivity) context).allTotalPrice = 0.00;
             ((ShopDetailsActivity) context).sTotalTv.setText("$" + String.format("%.2f", sTotalPrice));
             ((ShopDetailsActivity) context).allTotalPriceTv.setText("$" + String.format("%.2f", Double.parseDouble(String.format("%.2f", totalPrice))));
+
+            // after removing item from cart, update cart count
+            ((ShopDetailsActivity) context).cartCount();
         });
     }
 
