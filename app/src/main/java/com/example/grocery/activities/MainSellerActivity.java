@@ -1,6 +1,7 @@
 package com.example.grocery.activities;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -23,7 +24,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.grocery.Constants;
 import com.example.grocery.ProgressDialogFragment;
 import com.example.grocery.R;
+import com.example.grocery.adapters.AdapterOrderShop;
 import com.example.grocery.adapters.AdapterProductSeller;
+import com.example.grocery.models.ModelOrderShop;
 import com.example.grocery.models.ModelProduct;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -39,15 +42,17 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public class MainSellerActivity extends AppCompatActivity {
-    private TextView nameTv, shopNameTV, emailTV, tabProductsTv, tabOrdersTv, filteredProductsTv;
+    private TextView nameTv, shopNameTV,filteredOrdersTv, emailTV, tabProductsTv, tabOrdersTv, filteredProductsTv;
     private EditText searchProductEt;
-    private ImageButton logoutBtn, editProfileBtn, addProductBtn, filterProductBtn;
+    private ImageButton logoutBtn,filterOrderBtn, editProfileBtn, addProductBtn, filterProductBtn;
     private ImageView profileIv;
     private RelativeLayout productsRl, ordersRl;
-    private RecyclerView productsRv;
+    private RecyclerView productsRv,ordersRv;
     private FirebaseAuth firebaseAuth;
     private ArrayList<ModelProduct> productList;
     private AdapterProductSeller adapterProductSeller;
+    private ArrayList<ModelOrderShop>orderShopArrayList;
+    private AdapterOrderShop adapterOrderShop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,10 +76,14 @@ public class MainSellerActivity extends AppCompatActivity {
         productsRl = findViewById(R.id.productRl);
         ordersRl = findViewById(R.id.ordersRl);
         productsRv = findViewById(R.id.productsRv);
+        filteredOrdersTv = findViewById(R.id.filteredOrdersTv);
+        filterOrderBtn = findViewById(R.id.filterOrderBtn);
+        ordersRv= findViewById(R.id.ordersRv);
 
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
         loadAllProducts();
+        loadAllOrders();
 
         showProductsUI();
 
@@ -111,6 +120,26 @@ public class MainSellerActivity extends AppCompatActivity {
             //open edit profile activity
             startActivity(new Intent(MainSellerActivity.this, ProfileEditSellerActivity.class));
         });
+        filterOrderBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String [] options = {"All","In Progress","Completed","Cancelled"};
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainSellerActivity.this);
+                builder.setTitle("Fillter options:").setItems(options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(which==0){
+                            filteredOrdersTv.setText("Showing all Orders");
+                            adapterOrderShop.getFilter().filter("");//showing all
+                        }else{
+                            String optionClicked = options[which];
+                            filteredOrdersTv.setText("Showing"+optionClicked+"Orders");
+                            adapterOrderShop.getFilter().filter(optionClicked);
+                        }
+                    }
+                }).show();
+            }
+        });
 
         addProductBtn.setOnClickListener(v -> startActivity(new Intent(MainSellerActivity.this, AddProductActivity.class)));
         tabOrdersTv.setOnClickListener(v -> showOrdersUI());
@@ -132,6 +161,29 @@ public class MainSellerActivity extends AppCompatActivity {
                         }
                     })
                     .show();
+        });
+    }
+
+    private void loadAllOrders() {
+        orderShopArrayList= new ArrayList<>();
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(firebaseAuth.getUid()).child("Orders").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                orderShopArrayList.clear();
+                for(DataSnapshot ds:snapshot.getChildren()){
+                    ModelOrderShop modelOrderShop = ds.getValue(ModelOrderShop.class);
+                    //add to list
+                    orderShopArrayList.add(modelOrderShop);
+                }
+                adapterOrderShop = new AdapterOrderShop(MainSellerActivity.this,orderShopArrayList);
+                ordersRv.setAdapter(adapterOrderShop);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
         });
     }
 
