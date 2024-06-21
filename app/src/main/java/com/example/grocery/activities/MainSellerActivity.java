@@ -44,7 +44,7 @@ import java.util.Objects;
 public class MainSellerActivity extends AppCompatActivity {
     private TextView nameTv, shopNameTV,filteredOrdersTv, emailTV, tabProductsTv, tabOrdersTv, filteredProductsTv;
     private EditText searchProductEt;
-    private ImageButton logoutBtn,filterOrderBtn, editProfileBtn, addProductBtn, filterProductBtn;
+    private ImageButton logoutBtn,filterOrderBtn, editProfileBtn, addProductBtn, filterProductBtn, reviewsBtn;
     private ImageView profileIv;
     private RelativeLayout productsRl, ordersRl;
     private RecyclerView productsRv,ordersRv;
@@ -78,7 +78,8 @@ public class MainSellerActivity extends AppCompatActivity {
         productsRv = findViewById(R.id.productsRv);
         filteredOrdersTv = findViewById(R.id.filteredOrdersTv);
         filterOrderBtn = findViewById(R.id.filterOrderBtn);
-        ordersRv= findViewById(R.id.ordersRv);
+        ordersRv = findViewById(R.id.ordersRv);
+        reviewsBtn = findViewById(R.id.reviewsBtn);
 
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
@@ -123,23 +124,25 @@ public class MainSellerActivity extends AppCompatActivity {
         filterOrderBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String [] options = {"All","In Progress","Completed","Cancelled"};
+                String[] options = {"All", "In Progress", "Completed", "Cancelled"};
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainSellerActivity.this);
                 builder.setTitle("Fillter options:").setItems(options, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if(which==0){
+                        if (which == 0) {
                             filteredOrdersTv.setText("Showing all Orders");
                             adapterOrderShop.getFilter().filter("");//showing all
-                        }else{
+                        } else {
                             String optionClicked = options[which];
-                            filteredOrdersTv.setText("Showing"+optionClicked+"Orders");
+                            filteredOrdersTv.setText("Showing" + optionClicked + "Orders");
                             adapterOrderShop.getFilter().filter(optionClicked);
                         }
                     }
                 }).show();
             }
         });
+
+
 
         addProductBtn.setOnClickListener(v -> startActivity(new Intent(MainSellerActivity.this, AddProductActivity.class)));
         tabOrdersTv.setOnClickListener(v -> showOrdersUI());
@@ -162,7 +165,20 @@ public class MainSellerActivity extends AppCompatActivity {
                     })
                     .show();
         });
+
+        reviewsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //open same reviews activity as used in user main page
+                Intent intent = new Intent(MainSellerActivity.this, ShopReviewsActivity.class);
+                intent.putExtra("shopUid", ""+firebaseAuth.getUid());
+                startActivity(intent);
+            }
+        });
+
     }
+
+
 
     private void loadAllOrders() {
         orderShopArrayList= new ArrayList<>();
