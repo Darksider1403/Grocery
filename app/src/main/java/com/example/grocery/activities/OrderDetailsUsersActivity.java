@@ -166,7 +166,7 @@ public class OrderDetailsUsersActivity extends AppCompatActivity {
 
     private void findAddress(String latitude, String longitude) {
         double lat = Double.parseDouble(latitude);
-        double lon = Double.parseDouble(latitude);
+        double lon = Double.parseDouble(longitude);
 
         // find address, country, state, city
         Geocoder geocoder;

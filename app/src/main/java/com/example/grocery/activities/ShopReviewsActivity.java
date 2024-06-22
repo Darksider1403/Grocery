@@ -1,5 +1,6 @@
 package com.example.grocery.activities;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -42,6 +43,7 @@ public class ShopReviewsActivity extends AppCompatActivity {
     private ArrayList<ModelReview> reviewArrayList; // will contain list of all reviews
     private AdapterReview adapterReview;
     private String shopUid;
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

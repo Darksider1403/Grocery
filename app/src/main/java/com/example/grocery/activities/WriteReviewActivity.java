@@ -31,13 +31,14 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class WriteReviewActivity extends AppCompatActivity {
-    private  String shopUid;
+    private String shopUid;
     private static final String TAG = "WriteReviewActivity";
     private ImageButton backBtn;
     private ImageView profileIv;
-    private TextView shopNameTv,labelTv;
+    private TextView shopNameTv, labelTv;
     private RatingBar ratingBar;
     private EditText reviewEt;
     private FloatingActionButton submitBtn;
@@ -69,19 +70,11 @@ public class WriteReviewActivity extends AppCompatActivity {
         //Load shop info
         loadShopInfo();
         //go back previous acti
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        backBtn.setOnClickListener(v -> finish());
 
-        submitBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //input data
-                inputData();
-            }
+        submitBtn.setOnClickListener(v -> {
+            //input data
+            inputData();
         });
     }
 
@@ -90,13 +83,13 @@ public class WriteReviewActivity extends AppCompatActivity {
         ref.child(shopUid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String shopName = ""+snapshot.child("shopName").getValue();
-                String shopImage = ""+snapshot.child("profileImage").getValue();
+                String shopName = "" + snapshot.child("shopName").getValue();
+                String shopImage = "" + snapshot.child("profileImage").getValue();
                 //set shop info to ui
                 shopNameTv.setText(shopName);
                 try {
                     Picasso.get().load(shopImage).placeholder(R.drawable.ic_store_grey).into(profileIv);
-                }catch (Exception e){
+                } catch (Exception e) {
                     profileIv.setImageResource(R.drawable.ic_store_grey);
                 }
 
@@ -115,14 +108,14 @@ public class WriteReviewActivity extends AppCompatActivity {
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if(snapshot.exists()){
+                        if (snapshot.exists()) {
                             //My review in shop
 
                             //getReview data
-                            String uid = ""+snapshot.child("uid").getValue();
-                            String ratings = ""+snapshot.child("ratings").getValue();
-                            String review = ""+snapshot.child("review").getValue();
-                            String timestamp = ""+snapshot.child("timestamp").getValue();
+                            String uid = "" + snapshot.child("uid").getValue();
+                            String ratings = "" + snapshot.child("ratings").getValue();
+                            String review = "" + snapshot.child("review").getValue();
+                            String timestamp = "" + snapshot.child("timestamp").getValue();
                             //set review data to our ui
                             float myRating = Float.parseFloat(ratings);
                             ratingBar.setRating(myRating);
@@ -139,33 +132,22 @@ public class WriteReviewActivity extends AppCompatActivity {
     }
 
     private void inputData() {
-        String ratings = ""+ratingBar.getRating();
+        String ratings = "" + ratingBar.getRating();
         String review = reviewEt.getText().toString().trim();
         //For time of review
-        String timestamp= ""+System.currentTimeMillis();
+        String timestamp = "" + System.currentTimeMillis();
         //Set updata
-        HashMap<String,Object> hashMap= new HashMap<>();
-        hashMap.put("uid",""+firebaseAuth.getUid());
-        hashMap.put("ratings",ratings);
-        hashMap.put("review",review);
-        hashMap.put("timestamp",timestamp);
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("uid", "" + firebaseAuth.getUid());
+        hashMap.put("ratings", ratings);
+        hashMap.put("review", review);
+        hashMap.put("timestamp", timestamp);
 
         //Input data DB>USERS>shopUid>Ratings
         DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
-        ref.child(shopUid).child("Ratings").child(firebaseAuth.getUid()).updateChildren(hashMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Toast.makeText(WriteReviewActivity.this,"Review published sucessful..",Toast.LENGTH_SHORT).show();
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(WriteReviewActivity.this,""+e.getMessage(),Toast.LENGTH_SHORT).show();
-                    }
-                });
+        ref.child(shopUid).child("Ratings").child(Objects.requireNonNull(firebaseAuth.getUid())).updateChildren(hashMap)
+                .addOnSuccessListener(unused -> Toast.makeText(WriteReviewActivity.this, "Review published sucessful..", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(WriteReviewActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show());
 
     }
 }

@@ -1,5 +1,6 @@
 package com.example.grocery.activities;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
@@ -36,6 +37,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class OrderDetailsSellerActivity extends AppCompatActivity {
 
@@ -52,6 +54,7 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
 
     private ArrayList<ModelOrderedItem> orderedItemArrayList;
     private AdapterOrderedItem adapterOrderedItem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,26 +84,12 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
         loadBuyerInfo();
         loadOrderDetails();
         loadOrderedItems();
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //go back
-                onBackPressed();
-            }
-        });
 
-        mapBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openMap();
-            }
-        });
-        editBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //edit order status; In Progress, Completed, Cancelled
-                editOrderStatusDialog();
-            }
+        backBtn.setOnClickListener(v -> finish());
+        mapBtn.setOnClickListener(v -> openMap());
+        editBtn.setOnClickListener(v -> {
+            //edit order status; In Progress, Completed, Cancelled
+            editOrderStatusDialog();
         });
     }
 
@@ -110,13 +99,10 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
         //dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Edit Order Status")
-                .setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int i) {
-                        //handle item clicks
-                        String selectedOption = options[i];
-                        editOrderStatus(selectedOption);
-                    }
+                .setItems(options, (dialog, i) -> {
+                    //handle item clicks
+                    String selectedOption = options[i];
+                    editOrderStatus(selectedOption);
                 })
                 .show();
     }
@@ -124,25 +110,19 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
     private void editOrderStatus(String selectedOption) {
         //set up data to put in firebase db
         HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("orderStatus", "" +selectedOption);
+        hashMap.put("orderStatus", "" + selectedOption);
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-        ref.child(firebaseAuth.getUid()).child("Orders").child(orderId)
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Orders").child(orderId)
                 .updateChildren(hashMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        //status updated
-                        Toast.makeText(OrderDetailsSellerActivity.this, "Order is now" + selectedOption, Toast.LENGTH_SHORT).show();
-                    }
+                .addOnSuccessListener(unused -> {
+                    //status updated
+                    Toast.makeText(OrderDetailsSellerActivity.this, "Order is now" + selectedOption, Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        //failed updating status, show reason
-                        Toast.makeText(OrderDetailsSellerActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                .addOnFailureListener(e -> {
+                    //failed updating status, show reason
+                    Toast.makeText(OrderDetailsSellerActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
 
-                    }
                 });
     }
 
@@ -153,9 +133,10 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(address));
         startActivity(intent);
     }
+
     private void loadMyInfo() {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-        ref.child(firebaseAuth.getUid())
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid()))
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -179,8 +160,8 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
                         //get buyer info
                         destinationLatitude = "" + snapshot.child("latitude").getValue();
                         destinationLongitude = "" + snapshot.child("longitude").getValue();
-                        String email  = "" + snapshot.child("email").getValue();
-                        String phone  = "" + snapshot.child("phone").getValue();
+                        String email = "" + snapshot.child("email").getValue();
+                        String phone = "" + snapshot.child("phone").getValue();
 
                         //set info
                         emailTv.setText(email);
@@ -194,11 +175,13 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
                     }
                 });
     }
+
     private void loadOrderDetails() {
         //load detailed info of this order, based on order id
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-        ref.child(firebaseAuth.getUid()).child("Orders").child(orderId)
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Orders").child(orderId)
                 .addValueEventListener(new ValueEventListener() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         //get order info
@@ -218,13 +201,11 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
                         String dataFormated = DateFormat.format("dd/MM/yyyy", calendar).toString();
 
                         //order status
-                        if (orderStatus.equals("In Progress")){
+                        if (orderStatus.equals("In Progress")) {
                             orderStatusTv.setTextColor(getResources().getColor(R.color.colorPrimary));
-                        }
-                        else if (orderStatus.equals("Completed")){
+                        } else if (orderStatus.equals("Completed")) {
                             orderStatusTv.setTextColor(getResources().getColor(R.color.colorGreen));
-                        }
-                        else if (orderStatus.equals("Completed")){
+                        } else if (orderStatus.equals("Cancelled")) {
                             orderStatusTv.setTextColor(getResources().getColor(R.color.colorRed));
                         }
 
@@ -232,7 +213,7 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
                         orderIdTv.setText(orderId);
                         orderStatusTv.setText("orderStatus");
                         orderStatusTv.setText("orderStatus");
-                        amountTv.setText("$" +orderCost+"[Including delivery fee $"+deliveryFee+"]");
+                        amountTv.setText("$" + orderCost + "[Including delivery fee $" + deliveryFee + "]");
                         dateTv.setText(dataFormated);
 
                         findAddress(latitude, longitude); // to find delivery address
@@ -260,22 +241,24 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
             String address = addresses.get(0).getAddressLine(0);
             addressTv.setText(address);
         } catch (Exception e) {
-            Toast.makeText(this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-    private void loadOrderedItems(){
+
+    private void loadOrderedItems() {
         //load the products/items of order
 
         //init List
         orderedItemArrayList = new ArrayList<>();
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-        ref.child(firebaseAuth.getUid()).child("Orders").child(orderId).child("Items")
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Orders").child(orderId).child("Items")
                 .addValueEventListener(new ValueEventListener() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         orderedItemArrayList.clear();
-                        for(DataSnapshot ds: snapshot.getChildren()){
+                        for (DataSnapshot ds : snapshot.getChildren()) {
                             ModelOrderedItem modelOrderedItem = ds.getValue(ModelOrderedItem.class);
                             //add to list
                             orderedItemArrayList.add(modelOrderedItem);
@@ -286,7 +269,7 @@ public class OrderDetailsSellerActivity extends AppCompatActivity {
                         itemsRv.setAdapter(adapterOrderedItem);
 
                         //set total number of items/products in order
-                        totalItemsTv.setText(""+snapshot.getChildrenCount());
+                        totalItemsTv.setText("" + snapshot.getChildrenCount());
                     }
 
                     @Override
