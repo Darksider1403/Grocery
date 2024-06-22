@@ -61,7 +61,7 @@ public class OrderDetailsUsersActivity extends AppCompatActivity {
 
         itemRv = findViewById(R.id.itemRv);
 
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         orderTo = intent.getStringExtra("orderTo");
         orderId = intent.getStringExtra("orderId");
 

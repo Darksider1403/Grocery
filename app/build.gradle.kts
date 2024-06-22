@@ -73,7 +73,7 @@ dependencies {
     implementation(libs.ui.graphics)
     implementation(libs.ui.tooling.preview)
     implementation(libs.material3)
-
+    implementation("com.android.volley:volley:1.2.1")
     implementation(libs.androideasysql.library)
     implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
