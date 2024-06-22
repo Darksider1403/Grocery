@@ -75,6 +75,7 @@ dependencies {
     implementation(libs.material3)
 
     implementation(libs.androideasysql.library)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

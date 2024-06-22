@@ -38,7 +38,7 @@ import java.util.Objects;
 public class MainUserActivity extends AppCompatActivity {
     private TextView nameTv, emailTv, phoneTv, tabShopsTv, tabOrdersTv;
     private RelativeLayout shopsRl, ordersRl;
-    private ImageButton logoutBtn, editProfileBtn;
+    private ImageButton logoutBtn, editProfileBtn,settingsBtn;
     private ImageView profileIv;
     private RecyclerView shopsRv,ordersRv;
 
@@ -65,6 +65,7 @@ public class MainUserActivity extends AppCompatActivity {
         shopsRl = findViewById(R.id.shopsRl);
         ordersRl = findViewById(R.id.ordersRl);
         ordersRv=findViewById(R.id.ordersRv);
+        settingsBtn=findViewById(R.id.settingsBtn);
 
         shopsRv = findViewById(R.id.shopsRv);
 
@@ -87,6 +88,12 @@ public class MainUserActivity extends AppCompatActivity {
 
         tabShopsTv.setOnClickListener(v -> showShopsUI());
         tabOrdersTv.setOnClickListener(v -> showOrdersUI());
+        settingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainUserActivity.this,SettingsActivity.class));
+            }
+        });
     }
 
     private void showShopsUI() {
