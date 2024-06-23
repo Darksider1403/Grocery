@@ -217,7 +217,7 @@ public class AddProductActivity extends AppCompatActivity {
                     });
 
         } else {
-            String filePathName = "product_images/" + "" + timestamp;
+            String filePathName = "product_images/" + timestamp;
             StorageReference storageReference = FirebaseStorage.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference(filePathName);
             storageReference.putFile(image_uri)
                     .addOnSuccessListener(taskSnapshot -> {
@@ -231,7 +231,7 @@ public class AddProductActivity extends AppCompatActivity {
                                 hashMap.put("productDescription", "" + productDescription);
                                 hashMap.put("productCategory", "" + productCategory);
                                 hashMap.put("productQuantity", "" + productQuantity);
-                                hashMap.put("productIcon", "" + downloadImageUri);
+                                hashMap.put("productIcon", "" + downloadImageUri.toString());
                                 hashMap.put("originalPrice", "" + originalPrice);
                                 hashMap.put("discountPrice", "" + discountPrice);
                                 hashMap.put("discountNote", "" + discountNote);
@@ -272,7 +272,6 @@ public class AddProductActivity extends AppCompatActivity {
         discountedNoteEt.setText("");
         productIconTV.setImageResource(R.drawable.local_grocery_store_primary);
         image_uri = null;
-
     }
 
     private void categoryDialog() {
@@ -318,8 +317,6 @@ public class AddProductActivity extends AppCompatActivity {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri);
         startActivityForResult(intent, CAMERA_PICK_GALLERY_CODE);
-
-
     }
 
     private boolean checkStoragePermission() {
@@ -346,6 +343,7 @@ public class AddProductActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case CAMERA_REQUEST_CODE: {
                 if (grantResults.length > 0) {
@@ -357,6 +355,7 @@ public class AddProductActivity extends AppCompatActivity {
                         Toast.makeText(this, "Camera & storage permission needed..", Toast.LENGTH_SHORT).show();
                     }
                 }
+                break;
             }
             case STORAGE_REQUEST_CODE: {
                 if (grantResults.length > 0) {
@@ -367,19 +366,19 @@ public class AddProductActivity extends AppCompatActivity {
                         Toast.makeText(this, "Storage permission needed..", Toast.LENGTH_SHORT).show();
                     }
                 }
+                break;
             }
         }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK) {
-            if (resultCode == IMAGE_PICK_GALLERY_CODE) {
+            if (requestCode == IMAGE_PICK_GALLERY_CODE) {
+                assert data != null;
                 image_uri = data.getData();
                 productIconTV.setImageURI(image_uri);
-            } else if (resultCode == CAMERA_PICK_GALLERY_CODE) {
+            } else if (requestCode == CAMERA_PICK_GALLERY_CODE) {
                 productIconTV.setImageURI(image_uri);
             }
         }
