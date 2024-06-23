@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,7 +46,7 @@ import java.util.Objects;
 public class MainSellerActivity extends AppCompatActivity {
     private TextView nameTv, shopNameTV,filteredOrdersTv, emailTV, tabProductsTv, tabOrdersTv, filteredProductsTv;
     private EditText searchProductEt;
-    private ImageButton logoutBtn,filterOrderBtn, editProfileBtn, addProductBtn, filterProductBtn, reviewsBtn,settingsBtn;
+    private ImageButton logoutBtn,filterOrderBtn, editProfileBtn, addProductBtn, filterProductBtn,moreBtn, reviewsBtn,settingsBtn;
     private ImageView profileIv;
     private RelativeLayout productsRl, ordersRl;
     private RecyclerView productsRv,ordersRv;
@@ -64,6 +66,7 @@ public class MainSellerActivity extends AppCompatActivity {
         emailTV = findViewById(R.id.emailTv);
         tabProductsTv = findViewById(R.id.tabProductsTv);
         tabOrdersTv = findViewById(R.id.tabOrdersTv);
+        moreBtn = findViewById(R.id.moreBtn);
 
         searchProductEt = findViewById(R.id.searchProductEt);
         filteredProductsTv = findViewById(R.id.filteredProductsTv);
@@ -79,8 +82,8 @@ public class MainSellerActivity extends AppCompatActivity {
         filteredOrdersTv = findViewById(R.id.filteredOrdersTv);
         filterOrderBtn = findViewById(R.id.filterOrderBtn);
         ordersRv = findViewById(R.id.ordersRv);
-        reviewsBtn = findViewById(R.id.reviewsBtn);
-        settingsBtn = findViewById(R.id.settingsBtn);
+//        reviewsBtn = findViewById(R.id.reviewsBtn);
+//        settingsBtn = findViewById(R.id.settingsBtn);
 
         firebaseAuth = FirebaseAuth.getInstance();
         checkUser();
@@ -166,23 +169,36 @@ public class MainSellerActivity extends AppCompatActivity {
                     })
                     .show();
         });
-
-        reviewsBtn.setOnClickListener(new View.OnClickListener() {
+        //Popupmenu
+        PopupMenu popupMenu = new PopupMenu(MainSellerActivity.this,moreBtn);
+        popupMenu.getMenu().add("Settings");
+        popupMenu.getMenu().add("Revviews");
+        popupMenu.getMenu().add("Promotion Codes");
+        //Handle menu click
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
-            public void onClick(View view) {
-                //open same reviews activity as used in user main page
-                Intent intent = new Intent(MainSellerActivity.this, ShopReviewsActivity.class);
-                intent.putExtra("shopUid", ""+firebaseAuth.getUid());
-                startActivity(intent);
+            public boolean onMenuItemClick(MenuItem item) {
+                if(item.getTitle() == "Settings"){
+                    startActivity(new Intent(MainSellerActivity.this,SettingsActivity.class));
+                } else if(item.getTitle() == "Revviews"){
+                    //open same reviews activity as used in user main page
+                    Intent intent = new Intent(MainSellerActivity.this, ShopReviewsActivity.class);
+                    intent.putExtra("shopUid", ""+firebaseAuth.getUid());
+                    startActivity(intent);
+
+                } else if(item.getTitle() == "Promotion Codes"){
+                    startActivity(new Intent(MainSellerActivity.this,PromotionCodesActivity.class));
+                }
+                return true;
             }
         });
-        settingsBtn.setOnClickListener(new View.OnClickListener() {
+        //show more option
+        moreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainSellerActivity.this,SettingsActivity.class));
+                popupMenu.show();
             }
         });
-
     }
 
 
