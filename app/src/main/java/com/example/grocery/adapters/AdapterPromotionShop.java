@@ -1,5 +1,6 @@
 package com.example.grocery.adapters;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,14 +26,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionShop.HolderPromotionShop> {
 
-        private Context context;
-        private ArrayList<ModelPromotion> promotionArrayList;
+    private Context context;
+    private ArrayList<ModelPromotion> promotionArrayList;
 
-        private ProgressDialog progressDialog;
-        private FirebaseAuth firebaseAuth;
+    private ProgressDialog progressDialog;
+    private FirebaseAuth firebaseAuth;
 
     public AdapterPromotionShop(Context context, ArrayList<ModelPromotion> promotionArrayList) {
         this.context = context;
@@ -41,7 +43,7 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         this.firebaseAuth = FirebaseAuth.getInstance();
 
         this.progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle("Please wait");
+//        progressDialog.setTitle("Please wait");
         progressDialog.setCanceledOnTouchOutside(false);
     }
 
@@ -54,6 +56,7 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         return new HolderPromotionShop(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull HolderPromotionShop holder, int position) {
         //get data
@@ -70,16 +73,11 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         holder.descriptionTv.setText(description);
         holder.promoPriceTv.setText(promoPrice);
         holder.minimumOrderPriceTv.setText(minimumOrderPrice);
-        holder.promoCodeTv.setText("Code: "+promoCode);
-        holder.expireDateTv.setText("Expire Date: "+expireDate);
+        holder.promoCodeTv.setText("Code: " + promoCode);
+        holder.expireDateTv.setText("Expire Date: " + expireDate);
 
         //handle click, show Edit/Delete dialog
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                editDeleteDialog(modelPromotion, holder);
-            }
-        });
+        holder.itemView.setOnClickListener(v -> editDeleteDialog(modelPromotion, holder));
     }
 
     private void editDeleteDialog(ModelPromotion modelPromotion, HolderPromotionShop holder) {
@@ -88,17 +86,13 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         //dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Choose option")
-                .setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int i) {
-                        //handle clicks
-                        if (i==0){
-                            //Edit clicked
-                            editPromoCode(modelPromotion);
-                        }
-                        else if (i==1) {
-                            //Delete clicked
-                        }
+                .setItems(options, (dialog, i) -> {
+                    //handle clicks
+                    if (i == 0) {
+                        //Edit clicked
+                        editPromoCode(modelPromotion);
+                    } else if (i == 1) {
+                        //Delete clicked
                     }
                 })
                 .show();
@@ -109,24 +103,18 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         progressDialog.setMessage("Deleting Promotion Code...");
         progressDialog.show();
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("User");
-        ref.child(firebaseAuth.getUid()).child("Promotions").child(modelPromotion.getId())
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("User");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Promotions").child(modelPromotion.getId())
                 .removeValue()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        //deleted
-                        progressDialog.dismiss();
-                        Toast.makeText(context, "Deleting...", Toast.LENGTH_SHORT).show();
-                    }
+                .addOnSuccessListener(unused -> {
+                    //deleted
+                    progressDialog.dismiss();
+                    Toast.makeText(context, "Deleting...", Toast.LENGTH_SHORT).show();
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        //failed deleting
-                        progressDialog.dismiss();
-                        Toast.makeText(context, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                .addOnFailureListener(e -> {
+                    //failed deleting
+                    progressDialog.dismiss();
+                    Toast.makeText(context, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -143,7 +131,7 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
     }
 
     //view holder class
-    class HolderPromotionShop extends RecyclerView.ViewHolder{
+    static class HolderPromotionShop extends RecyclerView.ViewHolder {
         //view of row_promotion_shop.xml
         private ImageView iconIv;
         private TextView promoCodeTv, promoPriceTv, minimumOrderPriceTv, expireDateTv, descriptionTv;
@@ -159,6 +147,5 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
             expireDateTv = itemView.findViewById(R.id.expireDateTv);
             descriptionTv = itemView.findViewById(R.id.descriptionTv);
         }
-
     }
 }

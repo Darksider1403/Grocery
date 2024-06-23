@@ -42,6 +42,7 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class EditProductActivity extends AppCompatActivity {
 
@@ -133,8 +134,8 @@ public class EditProductActivity extends AppCompatActivity {
     }
 
     private void loadProductDetails() {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        reference.child(firebaseAuth.getUid()).child("Products").child(productId)
+        DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products").child(productId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -261,24 +262,18 @@ public class EditProductActivity extends AppCompatActivity {
             hashMap.put("discountAvailable", "" + discountAvailable);
 
             //update to db
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-            reference.child(firebaseAuth.getUid()).child("Products").child(productId)
+            DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+            reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products").child(productId)
                     .updateChildren(hashMap)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void unused) {
-                            //update success
-                            progressDialog.dismiss();
-                            Toast.makeText(EditProductActivity.this, "Updated...", Toast.LENGTH_SHORT).show();
-                        }
+                    .addOnSuccessListener(unused -> {
+                        //update success
+                        progressDialog.dismiss();
+                        Toast.makeText(EditProductActivity.this, "Updated...", Toast.LENGTH_SHORT).show();
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            //update failed
-                            progressDialog.dismiss();
-                            Toast.makeText(EditProductActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
+                    .addOnFailureListener(e -> {
+                        //update failed
+                        progressDialog.dismiss();
+                        Toast.makeText(EditProductActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         } else {
             //update with image
@@ -287,60 +282,48 @@ public class EditProductActivity extends AppCompatActivity {
             //image name and path on firebase storage
             String filePathAndName = "product_images/" + "" + productId; //overide previous image using same id
             //updload imgae
-            StorageReference storageReference = FirebaseStorage.getInstance().getReference(filePathAndName);
+            StorageReference storageReference = FirebaseStorage.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference(filePathAndName);
             storageReference.putFile(image_uri)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            //image upload, get url of upload image
+                    .addOnSuccessListener(taskSnapshot -> {
+                        //image upload, get url of upload image
 
-                            Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                            while (!uriTask.isSuccessful()) ;
-                            Uri downloadImageUri = uriTask.getResult();
+                        Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+                        while (!uriTask.isSuccessful()) ;
+                        Uri downloadImageUri = uriTask.getResult();
 
-                            if (uriTask.isSuccessful()) {
+                        if (uriTask.isSuccessful()) {
 //setup data in hashmap to update
-                                HashMap<String, Object> hashMap = new HashMap<>();
-                                hashMap.put("productTitle", "" + productTitle);
-                                hashMap.put("productDescription", "" + productDescription);
-                                hashMap.put("productCategory", "" + productCategory);
-                                hashMap.put("productIcon", "" + downloadImageUri);
-                                hashMap.put("productQuantity", "" + productQuantity);
-                                hashMap.put("originalPrice", "" + originalPrice);
-                                hashMap.put("discountPrice", "" + discountPrice);
-                                hashMap.put("discountNote", "" + discountNote);
-                                hashMap.put("discountAvailable", "" + discountAvailable);
+                            HashMap<String, Object> hashMap = new HashMap<>();
+                            hashMap.put("productTitle", "" + productTitle);
+                            hashMap.put("productDescription", "" + productDescription);
+                            hashMap.put("productCategory", "" + productCategory);
+                            hashMap.put("productIcon", "" + downloadImageUri);
+                            hashMap.put("productQuantity", "" + productQuantity);
+                            hashMap.put("originalPrice", "" + originalPrice);
+                            hashMap.put("discountPrice", "" + discountPrice);
+                            hashMap.put("discountNote", "" + discountNote);
+                            hashMap.put("discountAvailable", "" + discountAvailable);
 
-                                //update to db
-                                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-                                reference.child(firebaseAuth.getUid()).child("Products").child(productId)
-                                        .updateChildren(hashMap)
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void unused) {
-                                                //update success
-                                                progressDialog.dismiss();
-                                                Toast.makeText(EditProductActivity.this, "Updated...", Toast.LENGTH_SHORT).show();
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                //update failed
-                                                progressDialog.dismiss();
-                                                Toast.makeText(EditProductActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
-                            }
+                            //update to db
+                            DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+                            reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products").child(productId)
+                                    .updateChildren(hashMap)
+                                    .addOnSuccessListener(unused -> {
+                                        //update success
+                                        progressDialog.dismiss();
+                                        Toast.makeText(EditProductActivity.this, "Updated...", Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        //update failed
+                                        progressDialog.dismiss();
+                                        Toast.makeText(EditProductActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
                         }
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            //upload failed,
-                            progressDialog.dismiss();
-                            Toast.makeText(EditProductActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
+                    .addOnFailureListener(e -> {
+                        //upload failed,
+                        progressDialog.dismiss();
+                        Toast.makeText(EditProductActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         }
     }
@@ -437,10 +420,11 @@ public class EditProductActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (resultCode == RESULT_OK) {
-            if (resultCode == IMAGE_PICK_GALLERY_CODE) {
+            if (requestCode == IMAGE_PICK_GALLERY_CODE) {
+                assert data != null;
                 image_uri = data.getData();
                 productIconTV.setImageURI(image_uri);
-            } else if (resultCode == CAMERA_PICK_GALLERY_CODE) {
+            } else if (requestCode == CAMERA_PICK_GALLERY_CODE) {
                 productIconTV.setImageURI(image_uri);
             }
         }

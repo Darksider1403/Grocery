@@ -206,7 +206,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
     private float ratingSum = 0;
     private void loadReviews() {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
         ref.child(shopUid). child("Ratings")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -346,15 +346,15 @@ public class ShopDetailsActivity extends AppCompatActivity {
             Log.d("DEBUG", "myLatitude: " + myLatitude);
             Log.d("DEBUG", "myLongitude: " + myLongitude);
             Log.d("DEBUG", "myPhone: " + myPhone);
-            if (myLatitude.equals("") || myLatitude.equals("null") || myLongitude.equals("") || myLongitude.equals("null")) {
+            if (myLatitude.isEmpty() || myLatitude.equals("null") || myLongitude.equals("") || myLongitude.equals("null")) {
                 Toast.makeText(ShopDetailsActivity.this, "Please enter your address before order", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (myPhone.equals("") || myPhone.equals("null") || myPhone.equals("") || myPhone.equals("null")) {
+            if (myPhone.isEmpty() || myPhone.equals("null")) {
                 Toast.makeText(ShopDetailsActivity.this, "Please enter your phone before order", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (cartItemList.size() == 0) {
+            if (cartItemList.isEmpty()) {
                 Toast.makeText(ShopDetailsActivity.this, "No Item in cart", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -479,7 +479,6 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
 
@@ -611,18 +610,15 @@ public class ShopDetailsActivity extends AppCompatActivity {
                 intent.putExtra("orderId", orderId);
                 startActivity(intent);
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError volleyError) {
-                //if failed sending fcm, still start order details activity
-                Intent intent = new Intent(ShopDetailsActivity.this, OrderDetailsUsersActivity.class);
-                intent.putExtra("orderTo", shopUid);
-                intent.putExtra("orderId", orderId);
-                startActivity(intent);
-            }
+        }, volleyError -> {
+            //if failed sending fcm, still start order details activity
+            Intent intent = new Intent(ShopDetailsActivity.this, OrderDetailsUsersActivity.class);
+            intent.putExtra("orderTo", shopUid);
+            intent.putExtra("orderId", orderId);
+            startActivity(intent);
         }){
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
+            public Map<String, String> getHeaders() {
 
                 //put required heacers
                 Map<String, String> headers = new HashMap<>();
@@ -636,6 +632,4 @@ public class ShopDetailsActivity extends AppCompatActivity {
         //enque the volley request
         Volley.newRequestQueue(this).add(jsonObjectRequest);
     }
-
-
 }

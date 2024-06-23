@@ -43,6 +43,7 @@ public class ShopReviewsActivity extends AppCompatActivity {
     private ArrayList<ModelReview> reviewArrayList; // will contain list of all reviews
     private AdapterReview adapterReview;
     private String shopUid;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,27 +65,27 @@ public class ShopReviewsActivity extends AppCompatActivity {
         loadShopDetails(); //for shop name, image
         loadReviews(); //for reviews list, avg rating
 
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed(); //go prveious activity
-            }
+        backBtn.setOnClickListener(v -> {
+            finish(); //go prveious activity
         });
     }
+
     private float ratingSum = 0;
+
     private void loadReviews() {
         reviewArrayList = new ArrayList<>();
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
-        ref.child(shopUid). child("Ratings")
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(shopUid).child("Ratings")
                 .addValueEventListener(new ValueEventListener() {
+                    @SuppressLint({"SetTextI18n", "DefaultLocale"})
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         //clear list before adding data into it
                         reviewArrayList.clear();
                         ratingSum = 0;
-                        for(DataSnapshot ds: snapshot.getChildren()){
-                            float rating = Float.parseFloat(""+ds.child("rating").getValue());
-                            ratingSum = ratingSum +rating; //for avg rating, add(addtition of) all ratings, later will divide it by number of reviews
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            float rating = Float.parseFloat("" + ds.child("rating").getValue());
+                            ratingSum = ratingSum + rating; //for avg rating, add(addtition of) all ratings, later will divide it by number of reviews
 
                             ModelReview modelReview = ds.getValue(ModelReview.class);
                             reviewArrayList.add(modelReview);
@@ -95,9 +96,9 @@ public class ShopReviewsActivity extends AppCompatActivity {
                         reviewsRv.setAdapter(adapterReview);
 
                         long numberOfReviews = snapshot.getChildrenCount();
-                        float avgRating = ratingSum/numberOfReviews;
+                        float avgRating = ratingSum / numberOfReviews;
 
-                        ratingsTv.setText(String.format("%.2f", avgRating) + "[" + numberOfReviews +"]"); //e.g. 4.7 [10]
+                        ratingsTv.setText(String.format("%.2f", avgRating) + "[" + numberOfReviews + "]"); //e.g. 4.7 [10]
                         ratingBar.setRating(avgRating);
                     }
 
@@ -109,19 +110,18 @@ public class ShopReviewsActivity extends AppCompatActivity {
     }
 
     private void loadShopDetails() {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
         ref.child(shopUid)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        String shopName = ""+dataSnapshot.child("shopName").getValue();
+                        String shopName = "" + dataSnapshot.child("shopName").getValue();
                         String profileImage = "" + dataSnapshot.child("profileImage").getValue();
 
                         shopNameTv.setText(shopName);
-                        try{
+                        try {
                             Picasso.get().load(profileImage).placeholder(R.drawable.ic_store_grey).into(profileIv);
-                        }
-                        catch (Exception e){
+                        } catch (Exception e) {
                             //if anything goes wrong setting image (exepction occurs), set default image
                             profileIv.setImageResource(R.drawable.ic_store_grey);
                         }

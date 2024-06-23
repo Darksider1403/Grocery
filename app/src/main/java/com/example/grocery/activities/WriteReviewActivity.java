@@ -104,7 +104,7 @@ public class WriteReviewActivity extends AppCompatActivity {
 
     private void loadMyReview() {
         DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
-        ref.child(shopUid).child("Ratings").child(firebaseAuth.getUid())
+        ref.child(shopUid).child("Ratings").child(Objects.requireNonNull(firebaseAuth.getUid()))
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {

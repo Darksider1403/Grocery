@@ -1,5 +1,6 @@
 package com.example.grocery.activities;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 
 public class PromotionCodesActivity extends AppCompatActivity {
     private ImageButton backBtn,addPromoBtn, filteredBtn;
@@ -59,26 +61,11 @@ public class PromotionCodesActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         loadAllPromoCodes();
 
-        backBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-        addPromoBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(PromotionCodesActivity.this,AddPromotionCodeActivity.class));
-            }
-        });
+        backBtn.setOnClickListener(v -> finish());
+        addPromoBtn.setOnClickListener(v -> startActivity(new Intent(PromotionCodesActivity.this,AddPromotionCodeActivity.class)));
 
         //handle filter button click, show filter dialog
-        filteredBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                filterDialog();
-            }
-        });
+        filteredBtn.setOnClickListener(v -> filterDialog());
     }
 
     private void filterDialog() {
@@ -87,25 +74,22 @@ public class PromotionCodesActivity extends AppCompatActivity {
         //dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Filter Promotion Codes")
-                .setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int i) {
-                        //handle item click
-                        if (i==0) {
-                            //All clicked
-                            filteredTv.setText("All Promotion Codes");
-                            loadAllPromoCodes();
-                        }
-                        else if (i==1) {
-                            //Expired clicked
-                            filteredTv.setText("Expired Promotion Codes");
-                            loadAllPromoCodes();
-                        }
-                        else if (i==2) {
-                            //Not Expired clicked
-                            filteredTv.setText("Not Expired Promotion Codes");
-                            loadAllPromoCodes();
-                        }
+                .setItems(options, (dialog, i) -> {
+                    //handle item click
+                    if (i==0) {
+                        //All clicked
+                        filteredTv.setText("All Promotion Codes");
+                        loadAllPromoCodes();
+                    }
+                    else if (i==1) {
+                        //Expired clicked
+                        filteredTv.setText("Expired Promotion Codes");
+                        loadAllPromoCodes();
+                    }
+                    else if (i==2) {
+                        //Not Expired clicked
+                        filteredTv.setText("Not Expired Promotion Codes");
+                        loadAllPromoCodes();
                     }
                 })
         .show();
@@ -116,8 +100,8 @@ public class PromotionCodesActivity extends AppCompatActivity {
         promotionArrayList = new ArrayList<>();
 
         //db reference Users > current user > Promotion > codes data
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        reference.child(firebaseAuth.getUid()).child("Promotions")
+        DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Promotions")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -136,7 +120,6 @@ public class PromotionCodesActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
                     }
                 });
     }
@@ -154,8 +137,8 @@ public class PromotionCodesActivity extends AppCompatActivity {
         promotionArrayList = new ArrayList<>();
 
         //db reference Users > current user > Promotion > codes data
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        reference.child(firebaseAuth.getUid()).child("Promotions")
+        DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Promotions")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -164,13 +147,15 @@ public class PromotionCodesActivity extends AppCompatActivity {
                         for (DataSnapshot ds : snapshot.getChildren()) {
                             ModelPromotion modelPromotion = ds.getValue(ModelPromotion.class);
 
+                            assert modelPromotion != null;
                             String expDate = modelPromotion.getExpireDate();
 
                             /*------Check for expired------*/
                             try {
-                                SimpleDateFormat sdformat = new SimpleDateFormat("dd/mm/yyyy");
+                                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdformat = new SimpleDateFormat("dd/MM/yyyy");
                                 Date currentDate = sdformat.parse(todayDate);
                                 Date expireDate = sdformat.parse(expDate);
+                                assert expireDate != null;
                                 if (expireDate.compareTo(currentDate) > 0) {
                                     //date 1 occurs after date 2
                                 }
@@ -216,7 +201,7 @@ public class PromotionCodesActivity extends AppCompatActivity {
 
         //db reference Users > current user > Promotion > codes data
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-        reference.child(firebaseAuth.getUid()).child("Promotions")
+        reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Promotions")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -225,13 +210,15 @@ public class PromotionCodesActivity extends AppCompatActivity {
                         for (DataSnapshot ds : snapshot.getChildren()) {
                             ModelPromotion modelPromotion = ds.getValue(ModelPromotion.class);
 
+                            assert modelPromotion != null;
                             String expDate = modelPromotion.getExpireDate();
 
                             /*------Check for expired------*/
                             try {
-                                SimpleDateFormat sdformat = new SimpleDateFormat("dd/mm/yyyy");
+                                @SuppressLint("SimpleDateFormat") SimpleDateFormat sdformat = new SimpleDateFormat("dd/MM/yyyy");
                                 Date currentDate = sdformat.parse(todayDate);
                                 Date expireDate = sdformat.parse(expDate);
+                                assert expireDate != null;
                                 if (expireDate.compareTo(currentDate) > 0) {
                                     //date 1 occurs after date 2
                                     //add to list
@@ -260,7 +247,6 @@ public class PromotionCodesActivity extends AppCompatActivity {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
                     }
                 });
     }

@@ -72,7 +72,7 @@ public class AdapterReview extends RecyclerView.Adapter<AdapterReview.HolderRevi
         //uid of user who wrote review
         String uid = modelReview.getUid();
 
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users");
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
         ref.child(uid)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
