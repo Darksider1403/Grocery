@@ -67,12 +67,12 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         String promoCode = modelPromotion.getPromoCode();
         String promoPrice = modelPromotion.getPromoPrice();
         String expireDate = modelPromotion.getExpireDate();
-        String minimumOrderPrice = modelPromotion.getMinimumOrderPrice();
+//        String minimumOrderPrice = modelPromotion.getMinimumOrderPrice();
 
         //set data
         holder.descriptionTv.setText(description);
         holder.promoPriceTv.setText(promoPrice);
-        holder.minimumOrderPriceTv.setText(minimumOrderPrice);
+//        holder.minimumOrderPriceTv.setText(minimumOrderPrice);
         holder.promoCodeTv.setText("Code: " + promoCode);
         holder.expireDateTv.setText("Expire Date: " + expireDate);
 
@@ -143,7 +143,7 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
             iconIv = itemView.findViewById(R.id.iconIv);
             promoCodeTv = itemView.findViewById(R.id.promoCodeTv);
             promoPriceTv = itemView.findViewById(R.id.promoPriceTv);
-            minimumOrderPriceTv = itemView.findViewById(R.id.minimumOrderPriceEt);
+//            minimumOrderPriceTv = itemView.findViewById(R.id.minimumOrderPriceEt);
             expireDateTv = itemView.findViewById(R.id.expireDateTv);
             descriptionTv = itemView.findViewById(R.id.descriptionTv);
         }

@@ -5,9 +5,11 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,6 +46,7 @@ import com.example.grocery.models.ModelProduct;
 import com.example.grocery.models.ModelReview;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -55,6 +58,8 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -112,6 +117,8 @@ public class ShopDetailsActivity extends AppCompatActivity {
         productsRv.setLayoutManager(new LinearLayoutManager(this));
         reviewBtn = findViewById(R.id.reviewBtn);
         ratingBar = findViewById(R.id.ratingBar);
+
+
 
         firebaseAuth = FirebaseAuth.getInstance();
         loadMyInfo();
@@ -207,31 +214,45 @@ public class ShopDetailsActivity extends AppCompatActivity {
     private float ratingSum = 0;
     private void loadReviews() {
         DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
-        ref.child(shopUid). child("Ratings")
+        ref.child(shopUid).child("Ratings")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        //clear list before adding data into it
+                        // Clear list before adding data into it
                         ratingSum = 0;
-                        for(DataSnapshot ds: snapshot.getChildren()){
-                            float rating = Float.parseFloat(""+ds.child("rating").getValue());
-                            ratingSum = ratingSum +rating; //for avg rating, add(addtition of) all ratings, later will divide it by number of reviews
+                        int validRatingsCount = 0;
 
-
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            String ratingStr = ds.child("rating").getValue(String.class);
+                            if (ratingStr != null && !ratingStr.isEmpty()) {
+                                try {
+                                    float rating = Float.parseFloat(ratingStr);
+                                    ratingSum += rating;
+                                    validRatingsCount++;
+                                } catch (NumberFormatException e) {
+                                    Log.e("ShopDetailsActivity", "Invalid rating value: " + ratingStr, e);
+                                }
+                            } else {
+                                Log.e("ShopDetailsActivity", "Null or empty rating value found.");
+                            }
                         }
 
-                        long numberOfReviews = snapshot.getChildrenCount();
-                        float avgRating = ratingSum/numberOfReviews;
-
-                        ratingBar.setRating(avgRating);
+                        if (validRatingsCount > 0) {
+                            float avgRating = ratingSum / validRatingsCount;
+                            ratingBar.setRating(avgRating);
+                        } else {
+                            ratingBar.setRating(0); // Or any default value you prefer
+                        }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-
+                        // Handle possible errors
+                        Log.e("ShopDetailsActivity", "Database error: " + error.getMessage());
                     }
                 });
     }
+
 
     private void showProgressDialog(String message) {
         ProgressDialogFragment.newInstance(message).show(getSupportFragmentManager(), "progress");
@@ -266,7 +287,9 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
     public double allTotalPrice = 0.00;
     // need to access these views in adapter
-    public TextView sTotalTv, dFeeTv, allTotalPriceTv;
+    public TextView sTotalTv, dFeeTv, allTotalPriceTv,promoDescriptionTv,discountTv;
+    public EditText promoCodeEt;
+    public Button applyBtn;
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void showCartDialog() {
@@ -282,8 +305,23 @@ public class ShopDetailsActivity extends AppCompatActivity {
         sTotalTv = view.findViewById(R.id.sTotalTv);
         dFeeTv = view.findViewById(R.id.dFeeTv);
         allTotalPriceTv = view.findViewById(R.id.totalTv);
+        promoDescriptionTv = view.findViewById(R.id.promoDescriptionTv);
+        discountTv = view.findViewById(R.id.discountTv);
+        promoCodeEt = view.findViewById(R.id.promoCodeEt);
+        FloatingActionButton validateBtn = view.findViewById(R.id.validateBtn);
         Button checkoutBtn = view.findViewById(R.id.checkoutBtn);
-
+        applyBtn = view.findViewById(R.id.applyBtn);
+        if(isPromoCodeApplied){
+            promoDescriptionTv.setVisibility(View.VISIBLE);
+            applyBtn.setVisibility(View.VISIBLE);
+            applyBtn.setText("Applied");
+            promoCodeEt.setText(promoCode);
+            promoDescriptionTv.setText(promoDescription);
+        } else {
+            promoDescriptionTv.setVisibility(View.GONE);
+            applyBtn.setVisibility(View.GONE);
+            applyBtn.setText("Apply");
+        }
         // dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         //set view to dialog
@@ -323,17 +361,18 @@ public class ShopDetailsActivity extends AppCompatActivity {
                     "" + quantity);
 
             cartItemList.add(modelCartItem);
+
         }
 
         // setup adapter
         adapterCartItem = new AdapterCartItem(this, cartItemList);
         // set to recycle view
         cartItemsRv.setAdapter(adapterCartItem);
-
-        dFeeTv.setText("$" + deliveryFee);
-        sTotalTv.setText("$" + String.format("%.2f", allTotalPrice));
-        allTotalPriceTv.setText("$" + (allTotalPrice + Double.parseDouble(deliveryFee.replace("$", ""))));
-
+        if(isPromoCodeApplied){
+            priceWithDiscount();
+        }else {
+            priceWithoutDiscount();
+        }
         // show dialog
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -360,7 +399,152 @@ public class ShopDetailsActivity extends AppCompatActivity {
             }
             submitOrder();
         });
+        //start validation code
+        validateBtn.setOnClickListener(new View.OnClickListener() {
+
+            /*Flow:
+            *1) Get Code from EditText
+            If not empty: promotion may be applied, otherwise no promotion *2) Check if code is valid i.e. Available id seller's promotion db If available: promotion may be applied, otherwise no promotion *3) Check if Expired or not
+            *
+            *
+            If not expired: promotion may be applied, otherwise no promotion
+            * 4) Check if Minimum Order price
+            *
+            If minimumOrderPrice is >= SubTotal Price: promotion available, otherwise no promotion*/
+            @Override
+            public void onClick(View v) {
+                String promotionCode= promoCodeEt.getText().toString().trim();
+                if(TextUtils.isEmpty(promotionCode)){
+                    Toast.makeText(ShopDetailsActivity.this,"Please enter promo code",Toast.LENGTH_SHORT).show();
+                }else{
+                    checkCodeAvaibility(promotionCode);
+                }
+            }
+        });
+        applyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isPromoCodeApplied = true;
+                applyBtn.setText("Applied");
+                priceWithDiscount();
+            }
+        });
     }
+    private void priceWithDiscount(){
+        discountTv.setText("$"+ promoPrice);
+        dFeeTv.setText("$" + deliveryFee);
+        sTotalTv.setText("$" + String.format("%.2f", allTotalPrice));
+        allTotalPriceTv.setText("$" + (allTotalPrice + Double.parseDouble(deliveryFee.replace( "$", ""))-Double.parseDouble(promoPrice)));
+
+    }
+    private void priceWithoutDiscount() {
+        discountTv.setText("0$");
+        dFeeTv.setText("$" + deliveryFee);
+        sTotalTv.setText("$" + String.format("%.2f", allTotalPrice));
+        allTotalPriceTv.setText("$" + (allTotalPrice + Double.parseDouble(deliveryFee.replace( "$", ""))));
+
+    }
+    public boolean isPromoCodeApplied = false;
+
+    public String promoId, promoTimestamp, promoCode, promoDescription, promoExpDate, promoMinimumOrderPrice, promoPrice;
+    private void checkCodeAvaibility(String promotionCode){
+        //progress bar
+        ProgressDialog progressDialog = new ProgressDialog( this);
+        progressDialog.setTitle("Please wait");
+        progressDialog.setMessage("Checking Promo Code...");
+        progressDialog.setCanceledOnTouchOutside (false);
+        isPromoCodeApplied = false;
+        applyBtn.setText("Apply");
+        priceWithoutDiscount();
+
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+        ref.child(shopUid).child("Promotions").orderByChild("promoCode").equalTo(promotionCode)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){
+                    progressDialog.dismiss();
+                    for(DataSnapshot ds: snapshot.getChildren()){
+                        promoId = ""+ds.child("id").getValue();
+                        promoTimestamp=""+ds.child("timestamp").getValue();
+                        promoCode = ""+ds.child("promoCode").getValue();
+                        promoDescription = ""+ds.child("description").getValue();
+                        promoExpDate = ""+ds.child("expireDate").getValue();
+                        promoMinimumOrderPrice = ""+ds.child("minimumOrderPrice").getValue();
+                        promoPrice = ""+ds.child("promoPrice").getValue();
+
+                        //check code valid
+                        checkCodeExpireDate();
+                    }
+                } else{
+                    //Enter code that dont exsit
+                    progressDialog.dismiss();
+                    Toast.makeText(ShopDetailsActivity.this,"Invalid Code",Toast.LENGTH_SHORT).show();
+                    applyBtn.setVisibility(View.GONE);
+                    promoDescriptionTv.setVisibility(View.GONE);
+                    promoDescriptionTv.setText("");
+                }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
+    private void checkCodeExpireDate() {
+        //Get current date
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;//it starts from instead of 1 thats why did +1
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        //concatenate date
+        String todayDate = day + "/" + month + "/" + year; //e.g. 11/07/2020
+        //check expire date
+        try {
+            SimpleDateFormat sdformat = new SimpleDateFormat("dd/MM/yyyy");
+            Date currentDate = sdformat.parse(todayDate);
+            Date expireDate = sdformat.parse(promoExpDate); // compare dates
+            if (expireDate.compareTo(currentDate) > 0) {
+                //date 1 occurs after date 2 (i.e. not expire date)
+                checkMinimumOrderPrice();
+            } else if (expireDate.compareTo(currentDate)<0) {
+//date 1 occurs before date 2 (i.e. not expired)
+                Toast.makeText(this, "The promotion code is expired on "+promoExpDate, Toast.LENGTH_SHORT).show();
+                applyBtn.setVisibility(View.GONE);
+                promoDescriptionTv.setVisibility(View.GONE);
+                promoDescriptionTv.setText("");
+                
+            } else if (expireDate.compareTo(currentDate) == 0) {
+                checkMinimumOrderPrice();
+            }
+        }
+        catch (Exception e){
+            Toast.makeText(ShopDetailsActivity.this,""+e.getMessage(),Toast.LENGTH_SHORT).show();
+            applyBtn.setVisibility(View.GONE);
+            promoDescriptionTv.setVisibility(View.GONE);
+            promoDescriptionTv.setText("");
+        }
+    }
+
+    private void checkMinimumOrderPrice() {
+
+//each promo code have minimum order price requirement, if order price is less then required then don't allow to apply code
+        if (Double.parseDouble(String.format("%.2f", allTotalPrice)) < Double.parseDouble(promoMinimumOrderPrice)){
+            //current order price is less then minimum order price required by promo code, so don't allow to apply
+            Toast.makeText( this, "This code is valid for order with minimum amount: $"+promoMinimumOrderPrice, Toast.LENGTH_SHORT).show(); applyBtn.setVisibility(View.GONE);
+            promoDescriptionTv.setVisibility(View.GONE);
+            promoDescriptionTv.setText("");
+        }
+    else {
+            //current order price is equal to or greater than minimum order price required by promo code, allow to apply code
+            applyBtn.setVisibility(View.VISIBLE);
+            promoDescriptionTv.setVisibility(View.VISIBLE);
+            promoDescriptionTv.setText(promoDescription);
+        }
+    }
+
 
     private void submitOrder() {
         showProgressDialog("Placing Order...");
@@ -379,6 +563,14 @@ public class ShopDetailsActivity extends AppCompatActivity {
         hashMap.put("orderTo", "" + shopUid);
         hashMap.put("latitude", "" + myLatitude);
         hashMap.put("longitude", "" + myLongitude);
+        hashMap.put("deliveryFee",""+deliveryFee);
+        if(isPromoCodeApplied){
+            hashMap.put("discount",""+promoCode);
+        }
+        else{
+            hashMap.put("discount","0");
+        }
+
 
         //add To DB
         final DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users").child(shopUid).child("Orders");

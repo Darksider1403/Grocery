@@ -76,33 +76,70 @@ public class AdapterCartItem extends RecyclerView.Adapter<AdapterCartItem.Holder
 
         // handle remove click listener, delete item from cart
         holder.itemRemoveTv.setOnClickListener(v -> {
-            // will create table if not exists, but in that case will must exist
-            EasyDB easyDB = EasyDB.init(context, "ITEMS_DB")
-                    .setTableName("ITEMS_TABLE")
-                    .addColumn(new Column("Item_id", new String[]{"Text", "unique"}))
-                    .addColumn(new Column("Item_PID", new String[]{"Text", "not null"}))
-                    .addColumn(new Column("Item_Name", new String[]{"Text", "not null"}))
-                    .addColumn(new Column("Item_Price_Each", new String[]{"Text", "not null"}))
-                    .addColumn(new Column("Item_Price", new String[]{"Text", "not null"}))
-                    .addColumn(new Column("Item_Quantity", new String[]{"Text", "not null"}))
-                    .doneTableColumn();
+                    // will create table if not exists, but in that case will must exist
+                    EasyDB easyDB = EasyDB.init(context, "ITEMS_DB")
+                            .setTableName("ITEMS_TABLE")
+                            .addColumn(new Column("Item_id", new String[]{"Text", "unique"}))
+                            .addColumn(new Column("Item_PID", new String[]{"Text", "not null"}))
+                            .addColumn(new Column("Item_Name", new String[]{"Text", "not null"}))
+                            .addColumn(new Column("Item_Price_Each", new String[]{"Text", "not null"}))
+                            .addColumn(new Column("Item_Price", new String[]{"Text", "not null"}))
+                            .addColumn(new Column("Item_Quantity", new String[]{"Text", "not null"}))
+                            .doneTableColumn();
 
-            easyDB.deleteRow(1, id);
+                    easyDB.deleteRow(1, id);
 
-            Toast.makeText(context, "Removed from cart...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Removed from cart...", Toast.LENGTH_SHORT).show();
 
-            // refresh list
-            cartItems.remove(position);
-            notifyItemChanged(position);
-            notifyDataSetChanged();
+                    // refresh list
+                    cartItems.remove(position);
+                    notifyItemChanged(position);
+                    notifyDataSetChanged();
 
-            double tx = Double.parseDouble((((ShopDetailsActivity) context).allTotalPriceTv.getText().toString().trim().replace("$", "")));
-            double totalPrice = tx - Double.parseDouble(cost.replace("$", ""));
-            double deliveryFee =  Double.parseDouble((((ShopDetailsActivity) context).deliveryFee.replace("$", "")));
-            double sTotalPrice =  Double.parseDouble(String.format("%.2f", totalPrice)) - Double.parseDouble(String.format("$.2f", deliveryFee));
-            ((ShopDetailsActivity) context).allTotalPrice = 0.00;
-            ((ShopDetailsActivity) context).sTotalTv.setText("$" + String.format("%.2f", sTotalPrice));
-            ((ShopDetailsActivity) context).allTotalPriceTv.setText("$" + String.format("%.2f", Double.parseDouble(String.format("%.2f", totalPrice))));
+
+//            double tx = Double.parseDouble((((ShopDetailsActivity) context).allTotalPriceTv.getText().toString().trim().replace("$", "")));
+//            double totalPrice = tx - Double.parseDouble(cost.replace("$", ""));
+//            double deliveryFee =  Double.parseDouble((((ShopDetailsActivity) context).deliveryFee.replace("$", "")));
+//            double sTotalPrice =  Double.parseDouble(String.format("%.2f", totalPrice)) - Double.parseDouble(String.format("$.2f", deliveryFee));
+//            ((ShopDetailsActivity) context).allTotalPrice = 0.00;
+//            ((ShopDetailsActivity) context).sTotalTv.setText("$" + String.format("%.2f", sTotalPrice));
+//            ((ShopDetailsActivity) context).allTotalPriceTv.setText("$" + String.format("%.2f", Double.parseDouble(String.format("%.2f", totalPrice))));
+
+                    //adjust the subtotal after product remove
+                    double subTotalWithoutDiscount = ((ShopDetailsActivity) context).allTotalPrice;
+                    double subTotalAfterProductRemove = subTotalWithoutDiscount - Double.parseDouble(cost.replace("$", ""));
+                    ((ShopDetailsActivity) context).allTotalPrice = subTotalAfterProductRemove;
+                    ((ShopDetailsActivity) context).sTotalTv.setText("$" + String.format("%.2f", ((ShopDetailsActivity) context).allTotalPrice));
+                    //once subtotal is updated...check minimum order price of promo code
+                    double promoPrice = Double.parseDouble(((ShopDetailsActivity) context).promoPrice);
+                    double deliveryFee = Double.parseDouble(((ShopDetailsActivity) context).deliveryFee.replace("$", ""));
+                    //check if promo code applied
+                    if (((ShopDetailsActivity) context).isPromoCodeApplied) {
+                        //applied
+                        if (subTotalAfterProductRemove < Double.parseDouble(((ShopDetailsActivity) context).promoMinimumOrderPrice)) {
+                            //current order price is less then minimum required price
+                            Toast.makeText(context, "This code is valid for order with minimum amount: $" + ((ShopDetailsActivity) context).promoMinimumOrderPrice, Toast.LENGTH_SHORT).show();
+                            ((ShopDetailsActivity) context).applyBtn.setVisibility(View.GONE);
+                            ((ShopDetailsActivity) context).promoDescriptionTv.setVisibility(View.GONE); ((ShopDetailsActivity) context).promoDescriptionTv.setText("");
+                            ((ShopDetailsActivity) context).discountTv.setText("$0");
+                            ((ShopDetailsActivity) context).isPromoCodeApplied = false;
+                            // show new net total after delivery fee
+                            ((ShopDetailsActivity) context).allTotalPriceTv.setText("$" + String.format("%.2f", Double.parseDouble(String.format("%.2f", subTotalAfterProductRemove + deliveryFee))));
+                        } else {
+                            ((ShopDetailsActivity) context).applyBtn.setVisibility(View.VISIBLE);
+                            ((ShopDetailsActivity) context). promoDescriptionTv.setVisibility(View.VISIBLE);
+                            ((ShopDetailsActivity) context).promoDescriptionTv.setText(((ShopDetailsActivity) context).promoDescription);
+                            //show new total price after adding delivery fee and subtracting promo fee
+                            ((ShopDetailsActivity) context).isPromoCodeApplied = true;
+                            ((ShopDetailsActivity) context).allTotalPriceTv.setText("$" + String.format("%.2f", Double.parseDouble(String.format("%.2f", subTotalAfterProductRemove + deliveryFee-promoPrice))));
+
+                        }
+                    }else{
+                        ((ShopDetailsActivity) context).allTotalPriceTv.setText("$" + String.format("%.2f", Double.parseDouble(String.format("%.2f", subTotalAfterProductRemove + deliveryFee))));
+                    }
+
+
+
 
             // after removing item from cart, update cart count
             ((ShopDetailsActivity) context).cartCount();

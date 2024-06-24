@@ -29,7 +29,7 @@
             android:text="Promotion Code"
             android:textColor="@color/colorPrimary"
             android:textSize="16sp"/>
-        
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/minimumOrderPricePriceLabelTv"
+            android:id="@+id/minimumOrderPriceLabelTv"
             android:layout_toEndOf="@id/iconIv"
             android:layout_below="@id/promoPriceTv"
             android:textColor="@color/colorBlack"
@@ -60,8 +60,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/minimumOrderPricePriceTv"
-            android:layout_toEndOf="@id/minimumOrderPricePriceLabelTv"
+            android:id="@+id/minimumOrderPriceTv"
+            android:layout_toEndOf="@id/minimumOrderPriceLabelTv"
             android:layout_below="@id/promoPriceTv"
             android:textColor="@color/colorBlack"
             android:text="50"/>
@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/expireDateTv"
             android:layout_toEndOf="@id/iconIv"
-            android:layout_below="@id/minimumOrderPricePriceTv"
+            android:layout_below="@id/minimumOrderPriceTv"
             android:textColor="@color/colorBlack"
             android:text="23/08/2024"/>
 
@@ -91,7 +91,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:src="@drawable/next_gray"
-            android:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary"/>
     </RelativeLayout>
 
 
