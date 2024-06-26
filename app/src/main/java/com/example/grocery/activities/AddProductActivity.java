@@ -185,11 +185,12 @@ public class AddProductActivity extends AppCompatActivity {
     }
 
     private void addProduct() {
-        showProgressDialog("Adding product...");
+        progressDialog.setMessage("Adding...");
         progressDialog.show();
 
         String timestamp = "" + System.currentTimeMillis();
         if (image_uri == null) {
+            // Add product without image
             HashMap<String, Object> hashMap = new HashMap<>();
             hashMap.put("productId", "" + timestamp);
             hashMap.put("productTitle", "" + productTitle);
@@ -203,10 +204,11 @@ public class AddProductActivity extends AppCompatActivity {
             hashMap.put("discountAvailable", "" + discountAvailable);
             hashMap.put("timeStamp", "" + timestamp);
             hashMap.put("uid", "" + firebaseAuth.getUid());
-            //add to db
+
+            // Add to database
             DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
-            reference.child(Objects.requireNonNull(firebaseAuth.getUid()))
-                    .child("Products").child(timestamp).setValue(hashMap).addOnSuccessListener(unused -> {
+            reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products").child(timestamp).setValue(hashMap)
+                    .addOnSuccessListener(unused -> {
                         hideProgressDialog();
                         Toast.makeText(AddProductActivity.this, "Product added..", Toast.LENGTH_SHORT).show();
                         clearData();
@@ -215,53 +217,52 @@ public class AddProductActivity extends AppCompatActivity {
                         hideProgressDialog();
                         Toast.makeText(AddProductActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
-
         } else {
+            // Add product with image
             String filePathName = "product_images/" + timestamp;
-            StorageReference storageReference = FirebaseStorage.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference(filePathName);
+            StorageReference storageReference = FirebaseStorage.getInstance().getReference(filePathName);
             storageReference.putFile(image_uri)
                     .addOnSuccessListener(taskSnapshot -> {
-                        Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                        while (!uriTask.isSuccessful()) {
-                            Uri downloadImageUri = uriTask.getResult();
-                            if (uriTask.isSuccessful()) {
-                                HashMap<String, Object> hashMap = new HashMap<>();
-                                hashMap.put("productId", "" + timestamp);
-                                hashMap.put("productTitle", "" + productTitle);
-                                hashMap.put("productDescription", "" + productDescription);
-                                hashMap.put("productCategory", "" + productCategory);
-                                hashMap.put("productQuantity", "" + productQuantity);
-                                hashMap.put("productIcon", "" + downloadImageUri.toString());
-                                hashMap.put("originalPrice", "" + originalPrice);
-                                hashMap.put("discountPrice", "" + discountPrice);
-                                hashMap.put("discountNote", "" + discountNote);
-                                hashMap.put("discountAvailable", "" + discountAvailable);
-                                hashMap.put("timeStamp", "" + timestamp);
-                                hashMap.put("uid", "" + firebaseAuth.getUid());
-                                //add to db
-                                DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
-                                reference.child(Objects.requireNonNull(firebaseAuth.getUid()))
-                                        .child("Products").child(timestamp).setValue(hashMap)
-                                        .addOnSuccessListener(unused -> {
-                                            hideProgressDialog();
-                                            Toast.makeText(AddProductActivity.this, "Product added..", Toast.LENGTH_SHORT).show();
-                                            clearData();
-                                        })
-                                        .addOnFailureListener(e -> {
-                                            hideProgressDialog();
-                                            Toast.makeText(AddProductActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        });
-                            }
-                        }
+                        storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                            String downloadImageUri = uri.toString();
+
+                            HashMap<String, Object> hashMap = new HashMap<>();
+                            hashMap.put("productId", "" + timestamp);
+                            hashMap.put("productTitle", "" + productTitle);
+                            hashMap.put("productDescription", "" + productDescription);
+                            hashMap.put("productCategory", "" + productCategory);
+                            hashMap.put("productQuantity", "" + productQuantity);
+                            hashMap.put("productIcon", "" + downloadImageUri);
+                            hashMap.put("originalPrice", "" + originalPrice);
+                            hashMap.put("discountPrice", "" + discountPrice);
+                            hashMap.put("discountNote", "" + discountNote);
+                            hashMap.put("discountAvailable", "" + discountAvailable);
+                            hashMap.put("timeStamp", "" + timestamp);
+                            hashMap.put("uid", "" + firebaseAuth.getUid());
+
+                            // Add to database
+                            DatabaseReference reference = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
+                            reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products").child(timestamp).setValue(hashMap)
+                                    .addOnSuccessListener(unused -> {
+                                        hideProgressDialog();
+                                        Toast.makeText(AddProductActivity.this, "Product added..", Toast.LENGTH_SHORT).show();
+                                        clearData();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        hideProgressDialog();
+                                        Toast.makeText(AddProductActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        }).addOnFailureListener(e -> {
+                            hideProgressDialog();
+                            Toast.makeText(AddProductActivity.this, "Failed to get download URL: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
                     })
                     .addOnFailureListener(e -> {
                         hideProgressDialog();
                         Toast.makeText(AddProductActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
-
         }
     }
-
     private void clearData() {
         titleEt.setText("");
         descriptionEt.setText("");
