@@ -38,13 +38,13 @@ import java.util.Objects;
 public class MainUserActivity extends AppCompatActivity {
     private TextView nameTv, emailTv, phoneTv, tabShopsTv, tabOrdersTv;
     private RelativeLayout shopsRl, ordersRl;
-    private ImageButton logoutBtn, editProfileBtn,settingsBtn;
+    private ImageButton logoutBtn, editProfileBtn, settingsBtn;
     private ImageView profileIv;
-    private RecyclerView shopsRv,ordersRv;
+    private RecyclerView shopsRv, ordersRv;
 
     private FirebaseAuth firebaseAuth;
     private ArrayList<ModelShop> shopsList;
-    private ArrayList<ModelOrderUser>ordersList;
+    private ArrayList<ModelOrderUser> ordersList;
     private AdapterOrderUser adapterOrderUser;
     private AdapterShop adapterShop;
 
@@ -64,8 +64,8 @@ public class MainUserActivity extends AppCompatActivity {
         tabOrdersTv = findViewById(R.id.tabOrdersTv);
         shopsRl = findViewById(R.id.shopsRl);
         ordersRl = findViewById(R.id.ordersRl);
-        ordersRv=findViewById(R.id.ordersRv);
-        settingsBtn=findViewById(R.id.settingsBtn);
+        ordersRv = findViewById(R.id.ordersRv);
+        settingsBtn = findViewById(R.id.settingsBtn);
 
         shopsRv = findViewById(R.id.shopsRv);
 
@@ -88,12 +88,7 @@ public class MainUserActivity extends AppCompatActivity {
 
         tabShopsTv.setOnClickListener(v -> showShopsUI());
         tabOrdersTv.setOnClickListener(v -> showOrdersUI());
-        settingsBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainUserActivity.this,SettingsActivity.class));
-            }
-        });
+        settingsBtn.setOnClickListener(v -> startActivity(new Intent(MainUserActivity.this, SettingsActivity.class)));
     }
 
     private void showShopsUI() {
@@ -197,7 +192,7 @@ public class MainUserActivity extends AppCompatActivity {
 //init order list
         ordersList = new ArrayList<>();
 // get orders
-        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference( "Users");
+        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -209,12 +204,12 @@ public class MainUserActivity extends AppCompatActivity {
                             .addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    if(dataSnapshot.exists()){
-                                        for (DataSnapshot ds:dataSnapshot.getChildren()){
+                                    if (dataSnapshot.exists()) {
+                                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
                                             ModelOrderUser modelOrderUser = ds.getValue(ModelOrderUser.class);
                                             ordersList.add(modelOrderUser);
                                         }
-                                        adapterOrderUser = new AdapterOrderUser(MainUserActivity.this,ordersList);
+                                        adapterOrderUser = new AdapterOrderUser(MainUserActivity.this, ordersList);
                                         ordersRv.setAdapter(adapterOrderUser);
                                     }
 
@@ -233,12 +228,10 @@ public class MainUserActivity extends AppCompatActivity {
 
             }
         });
-            }
+    }
 
 
-
-
-            private void loadShops(String myCity) {
+    private void loadShops(String myCity) {
         // init lít
         shopsList = new ArrayList<>();
 

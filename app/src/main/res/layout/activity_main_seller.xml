@@ -68,7 +68,7 @@
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:layout_marginEnd="10dp"
-            android:src="@drawable/local_grocery_store_grey"
+            android:src="@drawable/ic_store_grey"
             app:c_border="true"
             app:c_border_color="@color/colorWhite" />
 

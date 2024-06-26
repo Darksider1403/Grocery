@@ -91,7 +91,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:src="@drawable/next_gray"
-            app:tint="@color/colorPrimary"/>
+            app:tint="@color/colorPrimary" />
     </RelativeLayout>
 
 

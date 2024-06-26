@@ -28,7 +28,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.Objects;
 
-public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionShop.HolderPromotionShop> {
+public class AdapterPromotionShop
+        extends RecyclerView.Adapter<AdapterPromotionShop.HolderPromotionShop> {
 
     private Context context;
     private ArrayList<ModelPromotion> promotionArrayList;
@@ -43,7 +44,7 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         this.firebaseAuth = FirebaseAuth.getInstance();
 
         this.progressDialog = new ProgressDialog(context);
-//        progressDialog.setTitle("Please wait");
+        // progressDialog.setTitle("Please wait");
         progressDialog.setCanceledOnTouchOutside(false);
     }
 
@@ -51,15 +52,16 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
     @Override
     public HolderPromotionShop onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        //inflate layout
-        View view = LayoutInflater.from(context).inflate(R.layout.row_promotion_shop, parent, false);
+        // inflate layout
+        View view =
+                LayoutInflater.from(context).inflate(R.layout.row_promotion_shop, parent, false);
         return new HolderPromotionShop(view);
     }
 
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull HolderPromotionShop holder, int position) {
-        //get data
+        // get data
         ModelPromotion modelPromotion = promotionArrayList.get(position);
         String id = modelPromotion.getId();
         String timestamp = modelPromotion.getTimestamp();
@@ -67,61 +69,60 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         String promoCode = modelPromotion.getPromoCode();
         String promoPrice = modelPromotion.getPromoPrice();
         String expireDate = modelPromotion.getExpireDate();
-//        String minimumOrderPrice = modelPromotion.getMinimumOrderPrice();
+        // String minimumOrderPrice = modelPromotion.getMinimumOrderPrice();
 
-        //set data
+        // set data
         holder.descriptionTv.setText(description);
         holder.promoPriceTv.setText(promoPrice);
-//        holder.minimumOrderPriceTv.setText(minimumOrderPrice);
+        // holder.minimumOrderPriceTv.setText(minimumOrderPrice);
         holder.promoCodeTv.setText("Code: " + promoCode);
         holder.expireDateTv.setText("Expire Date: " + expireDate);
 
-        //handle click, show Edit/Delete dialog
+        // handle click, show Edit/Delete dialog
         holder.itemView.setOnClickListener(v -> editDeleteDialog(modelPromotion, holder));
     }
 
     private void editDeleteDialog(ModelPromotion modelPromotion, HolderPromotionShop holder) {
-        //options to display in dialog
+        // options to display in dialog
         String[] options = {"Edit", "Delete"};
-        //dialog
+        // dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Choose option")
-                .setItems(options, (dialog, i) -> {
-                    //handle clicks
-                    if (i == 0) {
-                        //Edit clicked
-                        editPromoCode(modelPromotion);
-                    } else if (i == 1) {
-                        //Delete clicked
-                    }
-                })
-                .show();
+        builder.setTitle("Choose option").setItems(options, (dialog, i) -> {
+            // handle clicks
+            if (i == 0) {
+                // Edit clicked
+                editPromoCode(modelPromotion);
+            } else if (i == 1) {
+                // Delete clicked
+            }
+        }).show();
     }
 
     private void deletePromoCode(ModelPromotion modelPromotion) {
-        //show progress bar
+        // show progress bar
         progressDialog.setMessage("Deleting Promotion Code...");
         progressDialog.show();
 
-        DatabaseReference ref = FirebaseDatabase.getInstance("https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("User");
-        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Promotions").child(modelPromotion.getId())
-                .removeValue()
-                .addOnSuccessListener(unused -> {
-                    //deleted
+        DatabaseReference ref = FirebaseDatabase
+                .getInstance(
+                        "https://grocery-c0677-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .getReference("User");
+        ref.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Promotions")
+                .child(modelPromotion.getId()).removeValue().addOnSuccessListener(unused -> {
+                    // deleted
                     progressDialog.dismiss();
                     Toast.makeText(context, "Deleting...", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    //failed deleting
+                }).addOnFailureListener(e -> {
+                    // failed deleting
                     progressDialog.dismiss();
                     Toast.makeText(context, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void editPromoCode(ModelPromotion modelPromotion) {
-        //start and pass data to AddPromoCodeActivity to edit
+        // start and pass data to AddPromoCodeActivity to edit
         Intent intent = new Intent(context, AddPromotionCodeActivity.class);
-        intent.putExtra("promoId", modelPromotion.getId()); //will use id to update promo code
+        intent.putExtra("promoId", modelPromotion.getId()); // will use id to update promo code
         context.startActivity(intent);
     }
 
@@ -130,20 +131,22 @@ public class AdapterPromotionShop extends RecyclerView.Adapter<AdapterPromotionS
         return promotionArrayList.size();
     }
 
-    //view holder class
+    // view holder class
     static class HolderPromotionShop extends RecyclerView.ViewHolder {
-        //view of row_promotion_shop.xml
+        // view of row_promotion_shop.xml
         private ImageView iconIv;
-        private TextView promoCodeTv, promoPriceTv, minimumOrderPriceTv, expireDateTv, descriptionTv;
+        private TextView promoCodeTv, promoPriceTv, minimumOrderPriceTv, minimumOrderPriceLabelTv,
+                expireDateTv, descriptionTv;
 
         public HolderPromotionShop(@NonNull View itemView) {
             super(itemView);
 
-            //init ui views
+            // init ui views
             iconIv = itemView.findViewById(R.id.iconIv);
             promoCodeTv = itemView.findViewById(R.id.promoCodeTv);
             promoPriceTv = itemView.findViewById(R.id.promoPriceTv);
-//            minimumOrderPriceTv = itemView.findViewById(R.id.minimumOrderPriceEt);
+            minimumOrderPriceTv = itemView.findViewById(R.id.minimumOrderPriceTv);
+            minimumOrderPriceLabelTv = itemView.findViewById(R.id.minimumOrderPriceLabelTv);
             expireDateTv = itemView.findViewById(R.id.expireDateTv);
             descriptionTv = itemView.findViewById(R.id.descriptionTv);
         }
