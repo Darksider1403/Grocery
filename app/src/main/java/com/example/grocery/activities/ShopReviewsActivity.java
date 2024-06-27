@@ -84,7 +84,7 @@ public class ShopReviewsActivity extends AppCompatActivity {
                         reviewArrayList.clear();
                         ratingSum = 0;
                         for (DataSnapshot ds : snapshot.getChildren()) {
-                            float rating = Float.parseFloat("" + ds.child("rating").getValue());
+                            float rating = Float.parseFloat("" + ds.child("ratings").getValue());
                             ratingSum = ratingSum + rating; //for avg rating, add(addtition of) all ratings, later will divide it by number of reviews
 
                             ModelReview modelReview = ds.getValue(ModelReview.class);
@@ -94,10 +94,8 @@ public class ShopReviewsActivity extends AppCompatActivity {
                         adapterReview = new AdapterReview(ShopReviewsActivity.this, reviewArrayList);
                         //set to recyleview
                         reviewsRv.setAdapter(adapterReview);
-
                         long numberOfReviews = snapshot.getChildrenCount();
                         float avgRating = ratingSum / numberOfReviews;
-
                         ratingsTv.setText(String.format("%.2f", avgRating) + "[" + numberOfReviews + "]"); //e.g. 4.7 [10]
                         ratingBar.setRating(avgRating);
                     }
