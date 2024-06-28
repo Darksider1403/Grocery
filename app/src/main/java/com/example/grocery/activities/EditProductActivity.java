@@ -88,6 +88,8 @@ public class EditProductActivity extends AppCompatActivity {
         discountedNoteEt = findViewById(R.id.discountedNoteEt);
         discountSwitch = findViewById(R.id.discountSwitch);
         updateProductBtn = findViewById(R.id.updateProductBtn);
+        descriptionEt = findViewById(R.id.descriptionEt);
+        quantityEt = findViewById(R.id.quantityEt);
 
         //get id of the product from intent
         productId = getIntent().getStringExtra("productId");
@@ -138,8 +140,9 @@ public class EditProductActivity extends AppCompatActivity {
         reference.child(Objects.requireNonNull(firebaseAuth.getUid())).child("Products").child(productId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
+
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        //get data
+                        // Get data
                         String productId = "" + dataSnapshot.child("productId").getValue();
                         String productTitle = "" + dataSnapshot.child("productTitle").getValue();
                         String productDescription = "" + dataSnapshot.child("productDescription").getValue();
@@ -148,19 +151,18 @@ public class EditProductActivity extends AppCompatActivity {
                         String productIcon = "" + dataSnapshot.child("productIcon").getValue();
                         String originalPrice = "" + dataSnapshot.child("originalPrice").getValue();
                         String discountPrice = "" + dataSnapshot.child("discountPrice").getValue();
+                        String discountAvailable = "" + dataSnapshot.child("discountAvailable").getValue();
                         String discountNoteAvailable = "" + dataSnapshot.child("discountNoteAvailable").getValue();
                         String timeStamp = "" + dataSnapshot.child("timeStamp").getValue();
                         String uid = "" + dataSnapshot.child("uid").getValue();
 
-                        //set data to views
-                        if (discountAvailable.equals("true")) {
+                        // Check if discountAvailable is null
+                        if ("true".equals(discountAvailable)) {
                             discountSwitch.setChecked(true);
-
                             discountedPriceEt.setVisibility(View.VISIBLE);
                             discountedNoteEt.setVisibility(View.VISIBLE);
                         } else {
                             discountSwitch.setChecked(false);
-
                             discountedPriceEt.setVisibility(View.GONE);
                             discountedNoteEt.setVisibility(View.GONE);
                         }
@@ -175,11 +177,11 @@ public class EditProductActivity extends AppCompatActivity {
 
                         try {
                             Picasso.get().load(productIcon).placeholder(R.drawable.add_shopping_cart_white).into(productIconTV);
-
                         } catch (Exception e) {
                             productIconTV.setImageResource(R.drawable.add_shopping_cart_white);
                         }
                     }
+
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
