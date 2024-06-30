@@ -289,6 +289,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
     // need to access these views in adapter
     public TextView sTotalTv, dFeeTv, allTotalPriceTv,promoDescriptionTv,discountTv;
     public EditText promoCodeEt;
+    public  RecyclerView cartItemsRv;
     public Button applyBtn;
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
@@ -301,7 +302,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
         // init views
         TextView shopNameTv = view.findViewById(R.id.shopNameTv);
-        RecyclerView cartItemsRv = view.findViewById(R.id.cartItemsRv);
+        cartItemsRv = view.findViewById(R.id.cartItemsRv);
         sTotalTv = view.findViewById(R.id.sTotalTv);
         dFeeTv = view.findViewById(R.id.dFeeTv);
         allTotalPriceTv = view.findViewById(R.id.totalTv);
@@ -366,6 +367,7 @@ public class ShopDetailsActivity extends AppCompatActivity {
 
         // setup adapter
         adapterCartItem = new AdapterCartItem(this, cartItemList);
+        cartItemsRv.setLayoutManager(new LinearLayoutManager(this));
         // set to recycle view
         cartItemsRv.setAdapter(adapterCartItem);
         if(isPromoCodeApplied){
